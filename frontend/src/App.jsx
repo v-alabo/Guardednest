@@ -18,7 +18,7 @@ import Terms from './Terms'
 import Payment from './Payment'
 import Confirmation from './Confirmation'
 import Settings from './Settings'
-import Img from './img'
+import Img from './Img'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 
