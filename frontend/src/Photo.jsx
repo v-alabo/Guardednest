@@ -80,7 +80,7 @@ export default function Settings() {
                   <span className="icon">
                     <ion-icon name="home-outline"></ion-icon>
                   </span>
-                  <span className="title ">Dashboard</span>
+                  
                 </Link>
               </li>
               <li>
