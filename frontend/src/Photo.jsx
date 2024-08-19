@@ -137,6 +137,7 @@ export default function Settings() {
             <form onSubmit={handleSubmit} className="pics">
             <input id="image" type="file" accept=".jpg, .png, .jpeg" onChange={(e) => setImage(e.target.files)} />
             <br/>
+            <p>ju</p>
             <button type="submit">Submit</button>
             </form>
           </div>
