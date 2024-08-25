@@ -18,7 +18,7 @@ import Terms from './Terms'
 import Payment from './Payment'
 import Confirmation from './Confirmation'
 import Settings from './Settings'
-import Img from './Img'
+import Photo from './Photo'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 
@@ -49,7 +49,7 @@ function App() {
         <Route path='/user/withdrawals/select/paypal' element={<Paypal />}></Route>
         <Route path='/user/withdrawals/select/cashapp' element={<Cashapp />}></Route>
         <Route path='/user/settings' element={<Settings />}></Route>
-        <Route path='/user/settings/photo' element={<Img />}></Route>
+        <Route path='/user/settings/photo' element={<Photo />}></Route>
         
       </Routes>
       </BrowserRouter>

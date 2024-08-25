@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
-import cus1 from "./assets/customer01.jpg";
 import xmark from "./assets/xmark.svg";
 import "./style/dash.css";
 import { useState, useEffect } from "react";
+
+
 export default function Settings() {
   const [isNavActive, setNavActive] = useState(true);
 
@@ -44,24 +45,68 @@ export default function Settings() {
       });
   }, []);
 
+  useEffect(() => {
+    // Fetch images when component mounts
+    const fetchImages = async () => {
+      const token = window.localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:3001/imageData", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch images");
+        }
+
+        const data = await response.json();
+        if (data.status === "ok") {
+          setImages(data.data);
+        } else {
+          console.error("Error fetching images:", data.error);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchImages();
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("image", image[0]);
-    console.log(formData);
+    
     const token = window.localStorage.getItem("token");
+
     fetch("http://localhost:3001/upload", {
-        method: "POST",
-        crossDomain: true,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({formData, token}),
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          alert("Photo uploaded successfully");
+          // Optionally, re-fetch images after upload
+          fetchImages();
+        } else {
+          alert("Error uploading photo");
+        }
       })
-      
-    }
+      .catch((error) => console.error("Upload Error:", error));
+  };
+
     function closeNavigation() {
       setNavActive(false);
     }
@@ -76,7 +121,7 @@ export default function Settings() {
   
             <ul>
               <li>
-                <Link to={"/user"} activeClassName="active">
+                <Link to={"/user"}>
                   <span className="icon">
                     <ion-icon name="home-outline"></ion-icon>
                   </span>
@@ -128,7 +173,7 @@ export default function Settings() {
             <div className="user1">
               <p>Welcome {userData.fname}</p>
               <div className="user">
-                <img src={cus1} alt="profie-photo" />
+                <img src={ImageData.filename} alt="profie-photo" />
               </div>
             </div>
           </div>
@@ -137,7 +182,6 @@ export default function Settings() {
             <form onSubmit={handleSubmit} className="pics">
             <input id="image" type="file" accept=".jpg, .png, .jpeg" onChange={(e) => setImage(e.target.files)} />
             <br/>
-            <p>ju</p>
             <button type="submit">Submit</button>
             </form>
           </div>

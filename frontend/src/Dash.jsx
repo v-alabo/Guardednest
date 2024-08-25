@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
-import cus1 from "./assets/customer01.jpg";
+import user from "./assets/user.png";
 import xmark from "./assets/xmark.svg";
 import "./style/dash.css";
 import { useState, useEffect } from "react";
@@ -20,6 +20,7 @@ export default function Dash() {
   };
 
   const [userData, setUserData] = useState("");
+  const [imageData, setImageData] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
@@ -48,14 +49,56 @@ export default function Dash() {
       });
   }, []);
 
+  useEffect(() => {
+    // Fetch images when component mounts
+    const fetchImageData = async () => {
+      const token = window.localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:3001/imageData", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch images");
+        }
+
+        const data = await response.json();
+        if (data.status === "ok") {
+          setImageData(data.data);
+        } else {
+          console.error("Error fetching images:", data.error);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchImageData();
+  }, []);
+
+  console.log("User Data:", userData);
+  console.log("Image Data:", imageData);
 
   return (
     <>
       <div className="container">
         <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
-          <img className="logo1" src={logo1} alt="logo" />
-          <img className="xmark" src={xmark} alt="logo" onClick={closeNavigation} />
+            <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
           </div>
 
           <ul>
@@ -101,7 +144,7 @@ export default function Dash() {
             </li>
           </ul>
         </div>
-        
+
         <div className={`main ${isNavActive ? "active" : ""}`}>
           <div className="topbar">
             <div className="toggle" onClick={toggleNavigation}>
@@ -113,7 +156,7 @@ export default function Dash() {
             <div className="user1">
               <p>Welcome {userData.fname}</p>
               <div className="user">
-                <img src={cus1} alt="profie-photo" />
+                <img src={imageData?.url || user} />
               </div>
             </div>
           </div>
@@ -127,11 +170,10 @@ export default function Dash() {
                     <div className="numbers">$0.00</div>
                     <div className="bar-1">
                       <button>
-                      <Link className="link" to={"./fund"}>
-                        Fund
-                      </Link>
+                        <Link className="link" to={"./fund"}>
+                          Fund
+                        </Link>
                       </button>
-                     
                     </div>
                   </div>
                 </div>
@@ -142,22 +184,20 @@ export default function Dash() {
                     <div className="numbers">$0.00</div>
                     <div className="bar-2">
                       <button>
-                      <Link className="link" to={"./user/transfer"}>
-                      Transfer
-                      </Link>
+                        <Link className="link" to={"./user/transfer"}>
+                          Transfer
+                        </Link>
                       </button>
-                      
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="details"><div className="cardHeader">
-                  <h2>Transanctions</h2>
-                </div>
+            <div className="details">
+              <div className="cardHeader">
+                <h2>Transanctions</h2>
+              </div>
               <div className="recentTransact">
-                
-
                 <table>
                   <thead>
                     <tr>

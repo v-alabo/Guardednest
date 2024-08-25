@@ -169,7 +169,7 @@ app.post("/fundData", async (req, res) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, "../frontend/src/images");
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -183,31 +183,41 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
   if (!token) {
     console.error("No token provided");
-    return res.status(401).send("No token provided");
+    return res.status(401).json({ success: false, message: "No token provided" });
   }
 
   try {
     const decodedToken = jwt.verify(token, JWT_SECRET);
     const username = decodedToken.username;
 
-    if (!req.file) {
-      console.error("No file uploaded.");
-      return res.status(400).send("No file uploaded.");
+    // Log file info for debugging
+    console.log('File info:', req.file);
+
+    const image_filename = req.file.filename;
+    const image_path = req.file.path; // Full path to the file
+    const image_url = `http://localhost:3001/uploads/${image_filename}`; // Construct URL if needed
+
+    const image = new imageModel({
+      username: req.body.username || username, // Default to token username if not provided in body
+      path: image_path,
+      filename: image_filename,
+      url: image_url
+    });
+
+    try {
+      await image.save();
+      res.status(201).json({ success: true, message: "Photo added", url: image_url });
+    } catch (error) {
+      console.error("Error saving image:", error);
+      res.status(500).json({ success: false, message: "Error saving photo" });
     }
 
-    const { path, filename } = req.file; // Use filename instead of image (req.file contains metadata)
-    console.log("File received: ${filename}");
-
-    // Create and save the new image document
-    const image = new imageModel({ username, path, filename, url });
-    await image.save();
-
-    res.status(201).send("File uploaded and saved successfully: ${filename}");
   } catch (error) {
-    console.error("Error handling file upload:", error);
-    res.status(500).send("Internal Server Error");
+    console.error("Token verification failed:", error);
+    res.status(401).json({ success: false, message: "Invalid or expired token" });
   }
 });
+
 
 app.get("/imageData", async (req, res) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
