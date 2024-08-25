@@ -17,73 +17,67 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
-    // Your form validation and submission logic here
-    /* Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      alert("Please enter a valid email address");
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+
+        /* Basic client-side validation
+    if (!username || !fname || !lname || !date || !address || !country || !phone || !email || !password) {
+      alert("All fields are required.");
       return;
     }
-
-    // Password strength validation
-    const passwordRegex =
-      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+}{"':;?/>.<,])(?=.*[a-zA-Z]).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      alert(
-        "Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters"
-      );
+  
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert("Invalid email format.");
       return;
-    }*/
+    }
+  
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+    */
 
-    fetch("http://localhost:3001/register", {
-      method: "POST",
-      crossDomain: true,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        username,
-        fname,
-        lname,
-        date,
-        address,
-        country,
-        phone,
-        email,
-        password,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
+      try {
+        const response = await fetch("http://localhost:3001/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            fname,
+            lname,
+            date,
+            address,
+            country,
+            phone,
+            email,
+            password,
+          }),
+        });
+    
+        const data = await response.json();
+    
+        if (!response.ok) {
+          // Handle server error
+          throw new Error(data.error || 'An unknown error occurred');
+        }
+    
         if (data.success) {
-          /* Optionally, you can clear the form fields after successful registration
-        setUserName("");
-        setFirstName("");
-        setLastName("");
-        setDate("");
-        setAddress("");
-        setCountry("");
-        setPhone("");
-        setEmail("");
-        setPassword("");
-         */
-          // Redirect or perform any other actions
           alert("Registration Successful");
           navigate("/login");
         } else {
-          // Handle error response
-          console.error("Registration failed:", data.error);
+          alert("Registration failed: " + (data.error || 'Unknown error'));
         }
-      })
-      .catch((error) => {
-        console.error("Registration failed:", error);
-      });
-  };
+    
+      } catch (error) {
+        alert("An error occurred: " + error.message);
+      }
+    };
+    
+  
+  
   const [isNavActive, setNavActive] = useState(false);
 
   function toggleNavigation() {

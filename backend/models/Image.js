@@ -1,14 +1,11 @@
 const mongoose = require('mongoose')
 
-const ImageDetailsScehma = new mongoose.Schema(
-    {
-     username: String,   
-     image:String
-    },
-    {
-      collection: "ImageDetails",
-    }
-  );
-  
-  const Images = mongoose.model("ImageDetails", ImageDetailsScehma);
-  module.exports = Images
+const imageSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  path: { type: String, required: true },
+  filename: { type: String, required: true },
+  url: { type: String, required: true } // Add this line
+});
+
+const imageModel = mongoose.model('images', imageSchema);
+module.exports = imageModel

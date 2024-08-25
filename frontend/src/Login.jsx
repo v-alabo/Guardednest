@@ -129,7 +129,7 @@ export default function Login() {
             <div className="signup">
               <p>
                 {" "}
-                Don&#39;t have an account? <Link to="/register">Sign up</Link>
+                Don&#39;t have an account? <Link to="/signup">Sign up</Link>
               </p>
             </div>
           </div>

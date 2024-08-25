@@ -1,44 +1,55 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
+const bodyParser = require("body-parser")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
-const UserModel = require("./models/User");
-const FundModel = require("./models/Fund");
-const Images = require("./models/Image");
+const path = require("path");
+const userModel = require("./models/User");
+const fundModel = require("./models/Fund");
+const imageModel = require("./models/Image");
+const { connectDB } = require("./config/db");
 
+//Middleware
 const app = express();
+const port = 3001;
 app.use(express.json());
 app.use(cors());
+app.use(bodyParser.json());
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong" });
+});
 
-const JWT_SECRET = "hgdghhsjsjd.ffggeueueueduudjdjdhfdhd.fi}{}65756474";
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  "hgdghhsjsjd.ffggeueueueduudjdjdhfdhd.fi}{}65756474";
 
-mongoose.connect("mongodb://127.0.0.1:27017/guardednest");
+// db connect
+connectDB();
 
 // Login endpoint
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const user = await UserModel.findOne({ username });
-  if (!user) {
-    return res.json({ error: "User Not Found" });
-  }
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (passwordMatch) {
-    const token = jwt.sign({ username: user.username }, JWT_SECRET);
-
-    if (res.status(201)) {
-      return res.json({ status: "ok", data: token });
-    } else {
-      res.json({ error: "error" });
+  try {
+    const user = await userModel.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: "User Not Found" });
     }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (passwordMatch) {
+      const token = jwt.sign({ username: user.username }, JWT_SECRET);
+      return res.status(200).json({ status: "ok", data: token });
+    }
+    res.status(401).json({ status: "error", error: "Invalid Password" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
   }
-  res.json({ status: "error", error: "Invalid Password" });
 });
 
 // Registration endpoint
-app.post("/register", async (req, res) => {
+app.post("/signup", async (req, res) => {
   const {
     username,
     fname,
@@ -50,32 +61,22 @@ app.post("/register", async (req, res) => {
     email,
     password,
   } = req.body;
+  
   try {
-    /*Check if username is taken
-    const existingUser = await UserModel.findOne({ username });
-    if (existingUser) {
-      alert("Username not available");
-      return res.status(300).json({ error: "Username not available" });
-    }*/
-    // Check if email already exists
-    
-    const existingEmail = await UserModel.findOne({ email });
-    const existingUser = await UserModel.findOne({ username });
-    if (existingEmail) {
-      //alert("User already exists");
-      return res.status(400).json({ error: "User already exists" });
+    const existingEmail = await userModel.findOne({ email });
+    const existingUser = await userModel.findOne({ username });
 
-    } if(existingUser){
-      //alert("Username not available");
-      return res.status(300).json({ error: "Username not available" });
+    if (existingEmail) {
+      return res.status(400).json({ error: "Email already in use" });
     }
-    else {
-       
+    if (existingUser) {
+      return res.status(409).json({ error: "Username not available" });
     }
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // Create new user
-    const newUser = await UserModel.create({
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const newUser = await userModel.create({
       username,
       fname,
       lname,
@@ -86,12 +87,22 @@ app.post("/register", async (req, res) => {
       email,
       password: hashedPassword,
     });
-    res.status(201).json(newUser);
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.post("/userData", async (req, res) => {
   const { token } = req.body;
@@ -105,42 +116,29 @@ app.post("/userData", async (req, res) => {
     console.log(user);
 
     const username = user.username;
-    UserModel.findOne({ username: username })
-      .then((data) => {
-        res.send({ status: "ok", data: data });
-      })
-      .catch((error) => {
-        res.send({ status: "error", data: data });
-      });
-  } catch (error) {}
-});
+    const data = await userModel.findOne({ username: username });
 
-/* Middleware to verify JWT token and retrieve userId
-function verifyToken(req, res, next) {
-  const token =
-    req.body.token || req.query.token || req.headers["x-access-token"];
-  if (!token) {
-    return res.status(403).json({ error: "Token not provided" });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: "Failed to authenticate token" });
+    if (data) {
+      return res.status(200).json({ status: "ok", data: data });
+    } else {
+      return res
+        .status(404)
+        .json({ status: "error", error: "User data not found" });
     }
-    req.userId = decoded.userId; // Retrieve userId from decoded token
-    next();
-  });
-}*/
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(400).json({ error: "Invalid token" });
+  }
+});
 
 // Endpoint to add funds
 app.post("/user/fund", async (req, res) => {
   const { token, amount, plan } = req.body;
 
   try {
-    // Create a new fund entry in the database associated with the user ID
     const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username; // Extract userId from token
-    const newFund = await FundModel.create({ username, amount, plan });
+    const username = decodedToken.username;
+    const newFund = await fundModel.create({ username, amount, plan });
     res.status(201).json(newFund);
   } catch (error) {
     console.error(error);
@@ -153,78 +151,79 @@ app.post("/fundData", async (req, res) => {
   const { token } = req.body;
   try {
     const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username; // Extract username from token
+    const username = decodedToken.username;
+    const fund = await fundModel.findOne({ username });
 
-    // Fetch fund data based on username
-    FundModel.findOne({ username })
-      .then((fund) => {
-        if (fund) {
-          res.send({ status: "ok", data: fund });
-        } else {
-          res.send({ status: "error", error: "Fund data not found for the user" });
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching fund data:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-      });
+    if (fund) {
+      return res.status(200).json({ status: "ok", data: fund });
+    } else {
+      return res
+        .status(404)
+        .json({ status: "error", error: "Fund data not found for the user" });
+    }
   } catch (error) {
-    console.error("Error decoding token:", error);
-    res.status(400).json({ error: "Invalid token" });
+    console.error("Error:", error);
+    return res.status(400).json({ error: "Invalid token" });
   }
 });
-
-/*
-app.post("/upload", upload.single("image"), async (req, res) => {
-  const { token, image } = req.body;
-
-  try {
-    
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username; // Extract userId from token
-    const newImage = await ImageModel.create({ username, image });
-    res.status(201).json(newImage);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-*/
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "../src/images/");
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
   },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now();
-    cb(null, uniqueSuffix + file.originalname);
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
 const upload = multer({ storage: storage });
 
-app.post("/upload-image", upload.single("image"), async (req, res) => {
-  console.log(req.body);
-  const imageName = req.file.filename;
+app.post("/upload", upload.single("image"), async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res.status(401).send("No token provided");
+  }
 
   try {
-    await Images.create({ image: imageName });
-    res.json({ status: "ok" });
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+
+    if (!req.file) {
+      console.error("No file uploaded.");
+      return res.status(400).send("No file uploaded.");
+    }
+
+    const { path, filename } = req.file; // Use filename instead of image (req.file contains metadata)
+    console.log("File received: ${filename}");
+
+    // Create and save the new image document
+    const image = new imageModel({ username, path, filename, url });
+    await image.save();
+
+    res.status(201).send("File uploaded and saved successfully: ${filename}");
   } catch (error) {
-    res.json({ status: error });
+    console.error("Error handling file upload:", error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
-app.get("/get-image", async (req, res) => {
+app.get("/imageData", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
   try {
-    Images.find({}).then((data) => {
-      res.send({ status: "ok", data: data });
-    });
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+    const images = await imageModel.findOne({ username });
+    return res.status(200).json({ status: "ok", data: images });
   } catch (error) {
-    res.json({ status: error });
+    console.error("Error:", error);
+    return res
+      .status(500)
+      .json({ status: "error", error: "Internal Server Error" });
   }
 });
 
-app.listen(3001, () => {
-  console.log("server is running");
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
