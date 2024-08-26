@@ -21,6 +21,7 @@ export default function Dash() {
 
   const [userData, setUserData] = useState("");
   const [imageData, setImageData] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
@@ -82,6 +83,41 @@ export default function Dash() {
     };
 
     fetchImageData();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const token = window.localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:3001/transactions", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch transactions");
+        }
+
+        const data = await response.json();
+        if (data.status === "ok") {
+          setTransactions(data.data);
+        } else {
+          console.error("Error fetching transactions:", data.error);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchTransactions();
   }, []);
 
   console.log("User Data:", userData);
@@ -195,52 +231,39 @@ export default function Dash() {
             </div>
             <div className="details">
               <div className="cardHeader">
-                <h2>Transanctions</h2>
+              <h2>Transactions</h2>
               </div>
               <div className="recentTransact">
-                <table>
-                  <thead>
-                    <tr>
-                      <td>Transaction</td>
-                      <td>Amount</td>
-                      <td>Status</td>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    <tr>
-                      <td>Deposit</td>
-                      <td>$5500</td>
-                      <td>
-                        <span className="status delivered">Delivered</span>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>Profit</td>
-                      <td>$110</td>
-                      <td>
-                        <span className="status inProgress">In Progress</span>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>Withdrawal</td>
-                      <td>$1200</td>
-                      <td>
-                        <span className="status return">Failed</span>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>Dell Laptop</td>
-                      <td>$110</td>
-                      <td>
-                        <span className="status pending">Pending</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                {transactions.length === 0 ? (
+                  <p>No Transactions</p>
+                ) : (
+                  <table>
+                    <thead>
+                      <tr>
+                        <td>Transaction</td>
+                        <td>Amount</td>
+                        <td>Status</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((transaction, index) => (
+                        <tr key={index}>
+                          <td> {transaction.type} </td>
+                          <td> {transaction.amount} </td>
+                          <td>
+                            <span
+                              className={`status ${transaction.status
+                                .replace(" ", "")
+                                .toLowerCase()}`}
+                            >
+                              {transaction.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           </div>

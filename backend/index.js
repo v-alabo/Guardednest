@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser")
+const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
@@ -8,6 +8,7 @@ const path = require("path");
 const userModel = require("./models/User");
 const fundModel = require("./models/Fund");
 const imageModel = require("./models/Image");
+const transactionModel = require("./models/Transact");
 const { connectDB } = require("./config/db");
 
 //Middleware
@@ -61,7 +62,7 @@ app.post("/signup", async (req, res) => {
     email,
     password,
   } = req.body;
-  
+
   try {
     const existingEmail = await userModel.findOne({ email });
     const existingUser = await userModel.findOne({ username });
@@ -103,7 +104,6 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-
 app.post("/userData", async (req, res) => {
   const { token } = req.body;
   console.log("Received token:", token);
@@ -136,15 +136,24 @@ app.post("/user/fund", async (req, res) => {
   const { token, amount, plan } = req.body;
 
   try {
+    // Decode the token to get the username
     const decodedToken = jwt.verify(token, JWT_SECRET);
     const username = decodedToken.username;
-    const newFund = await fundModel.create({ username, amount, plan });
-    res.status(201).json(newFund);
+
+    // Use findOneAndUpdate to either update an existing document or create a new one
+    const updatedFund = await fundModel.findOneAndUpdate(
+      { username },                   
+      { amount, plan },                
+      { new: true, upsert: true }      // Return the updated document, and create if it doesn't exist
+    );
+
+    res.status(201).json(updatedFund);
   } catch (error) {
-    console.error(error);
+    console.error("Error updating or creating fund:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 // Endpoint to retrieve fund data
 app.post("/fundData", async (req, res) => {
@@ -183,7 +192,9 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
   if (!token) {
     console.error("No token provided");
-    return res.status(401).json({ success: false, message: "No token provided" });
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
   }
 
   try {
@@ -191,7 +202,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     const username = decodedToken.username;
 
     // Log file info for debugging
-    console.log('File info:', req.file);
+    console.log("File info:", req.file);
 
     const image_filename = req.file.filename;
     const image_path = req.file.path; // Full path to the file
@@ -201,23 +212,25 @@ app.post("/upload", upload.single("image"), async (req, res) => {
       username: req.body.username || username, // Default to token username if not provided in body
       path: image_path,
       filename: image_filename,
-      url: image_url
+      url: image_url,
     });
 
     try {
       await image.save();
-      res.status(201).json({ success: true, message: "Photo added", url: image_url });
+      res
+        .status(201)
+        .json({ success: true, message: "Photo added", url: image_url });
     } catch (error) {
       console.error("Error saving image:", error);
       res.status(500).json({ success: false, message: "Error saving photo" });
     }
-
   } catch (error) {
     console.error("Token verification failed:", error);
-    res.status(401).json({ success: false, message: "Invalid or expired token" });
+    res
+      .status(401)
+      .json({ success: false, message: "Invalid or expired token" });
   }
 });
-
 
 app.get("/imageData", async (req, res) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
@@ -231,6 +244,79 @@ app.get("/imageData", async (req, res) => {
     return res
       .status(500)
       .json({ status: "error", error: "Internal Server Error" });
+  }
+});
+
+app.post("/transactions", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+
+    const fund = await fundModel.findOne({ username });
+
+    if (!fund) {
+      return res.status(404).json({ status: "error", error: "Fund not found" });
+    }
+
+    const { type, status } = req.body;
+    const amount = fund.amount;
+
+    const newTransaction = new transactionModel({
+      username,
+      type,
+      amount,
+      status,
+    });
+
+    await newTransaction.save();
+
+    res.json({ status: "ok", data: newTransaction });
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    res
+      .status(500)
+      .json({ status: "error", error: "Failed to create transaction" });
+  }
+});
+
+app.get("/transactions", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+
+    // Fetch transactions for the user
+    const transactions = await transactionModel.find({ username });
+
+    if (!transactions || transactions.length === 0) {
+      return res
+        .status(404)
+        .json({ status: "error", error: "No transactions found" });
+    }
+
+    res.json({ status: "ok", data: transactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res
+      .status(500)
+      .json({ status: "error", error: "Failed to fetch transactions" });
   }
 });
 

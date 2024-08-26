@@ -1,14 +1,54 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
 import cus1 from "./assets/customer01.jpg";
+import xmark from "./assets/xmark.svg";
 import "./style/dash.css";
 import { useState, useEffect } from "react";
 
+const addresses = {
+  bitcoin: "bc1qk47jxm8rrec2um50ext8s4mqdjr7sp3lnrlzhh",
+  ethereum: "0x32Be343B94f860124dC4fEe278FDCBD38C102D88",
+  tether: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+};
+
+const cryptoShortForms = {
+  bitcoin: "BTC",
+  ethereum: "ETH",
+  tether: "USDT",
+};
+
 function Confirmation() {
   const [isNavActive, setNavActive] = useState(false);
+  const location = useLocation();
+  const { amount, crypto } = location.state || {};
+  const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  };
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
+  }
+
+  function closeNavigation() {
+    setNavActive(false);
   }
 
   function copyContent() {
@@ -22,7 +62,6 @@ function Confirmation() {
   };
 
   const [userData, setUserData] = useState("");
-  
 
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
@@ -40,33 +79,33 @@ function Confirmation() {
       .then((res) => res.json())
       .then((data) => {
         console.log(data, "userData");
-   
         setUserData(data.data);
 
-        if (data.data == "token expired") {
+        if (data.data === "token expired") {
           alert("Token expired login again");
           window.localStorage.clear();
           window.location.href = "./sign-in";
         }
       });
-    }, []);
+  }, []);
 
-
-    return (
-      <>
-        <div className="container">
+  return (
+    <>
+      <div className="container">
         <div className={`navigation ${isNavActive ? "active" : ""}`}>
+          <div className="navbar">
+            <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
+          </div>
+
           <ul>
             <li>
-              <Link to="#">
-                <span className="icon">
-                  <img className="logo1" src={logo1} alt="logo" />
-                </span>
-                <span className="title"></span>
-              </Link>
-            </li>
-            <li>
-              <Link to={"/user"} activeClassName="active">
+              <Link to={"/user"}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
@@ -74,7 +113,7 @@ function Confirmation() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/withdrawals"} >
+              <Link to={"/user/withdrawals"}>
                 <span className="icon">
                   <ion-icon name="wallet-outline"></ion-icon>
                 </span>
@@ -82,7 +121,7 @@ function Confirmation() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/transactions"} >
+              <Link to={"/user/transactions"}>
                 <span className="icon">
                   <ion-icon name="stats-chart-outline"></ion-icon>
                 </span>
@@ -90,7 +129,7 @@ function Confirmation() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/settings"} >
+              <Link to={"/user/settings"}>
                 <span className="icon">
                   <ion-icon name="settings-outline"></ion-icon>
                 </span>
@@ -98,7 +137,7 @@ function Confirmation() {
               </Link>
             </li>
             <li>
-              <Link to={"/login"} onClick={logOut} >
+              <Link to={"/login"} onClick={logOut}>
                 <span className="icon">
                   <ion-icon name="log-out-outline"></ion-icon>
                 </span>
@@ -115,18 +154,19 @@ function Confirmation() {
                 <path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z" />
               </svg>
             </div>
+
             <div className="user1">
               <p>Welcome {userData.fname}</p>
               <div className="user">
-                <img src={cus1} alt="profie-photo" />
+                <img src={cus1} alt="profile-photo" />
               </div>
             </div>
-          </div> 
-           <div className="tab">
+          </div>
+          <div className="tab">
             <div className="bank">
               <div className="text5">
-                <h2>Withdraw to CashApp</h2>
-                <p>SEND 0.10789 BTC TO THE WALLET ADDRESS BELOW</p>
+                <h2>Send Crypto</h2>
+                <p>SEND {amount} {cryptoShortForms[crypto]} TO THE WALLET ADDRESS BELOW</p>
               </div>
 
               <div className="wallet">
@@ -141,14 +181,17 @@ function Confirmation() {
                 <input
                   type="text"
                   id="address"
-                  value="bc1qk47jxm8rrec2um50ext8s4mqdjr7sp3lnrlzhh"
+                  value={addresses[crypto] || ''}
+                  readOnly
                 />
               </div>
               <div className="buttons">
-              <button className="btn3">UPLOAD PAYMENT PROOF</button> <br/>
-              <button className="btn4">WAIT FOR CONFIRMATION</button>
+                <button className="btn3">UPLOAD PAYMENT PROOF</button> <br />
+                <button className="btn4">WAIT FOR CONFIRMATION</button>
               </div>
-
+              <div className="timer">
+                <h3>{formatTime(timeLeft)}</h3>
+              </div>
             </div>
           </div>
         </div>

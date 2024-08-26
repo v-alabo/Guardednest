@@ -297,11 +297,11 @@ text-align: center;
 
 .details {
   position: relative;
-  width: 100%;
+  width: 60%;
   padding: 20px;
   display: grid;
   grid-template-columns: 1;
-  grid-gap: 30px;
+  grid-gap: 50px;
   /* margin-top: 10px; */
 }
 
@@ -342,8 +342,9 @@ text-align: center;
   font-weight: 600;
   font-size: 25px;
 }
+
 .details .recentTransact table tr {
-  font-size: 20px;
+  font-size: 25px;
   color: var(--black1);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
@@ -538,6 +539,14 @@ text-align: center;
   border: 1px solid #cb8d39;
   color: #cb8d39;
   border-radius: 4px;
+}
+.timer{
+  text-align: center;
+}
+.timer h3 {
+  color: #cb8d39;
+  font-size: 25px;
+  font-weight: 200;
 }
 
 .sector{

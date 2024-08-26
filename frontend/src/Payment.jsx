@@ -7,8 +7,8 @@ import { useState, useEffect } from "react";
 
 export default function Payment() {
   const [isNavActive, setNavActive] = useState(false);
-  const [userData, setUserData] = useState("");
-  const [fundData, setFundData] = useState("");
+  const [userData, setUserData] = useState(null);
+  const [fundData, setFundData] = useState(null);
   const [selectedCrypto, setSelectedCrypto] = useState("");
   const [cryptoRates, setCryptoRates] = useState({});
   const navigate = useNavigate();
@@ -21,11 +21,10 @@ export default function Payment() {
     window.localStorage.clear();
   };
 
-
   const divisionResult =
-  fundData && fundData.amount && selectedCrypto && cryptoRates[selectedCrypto]?.usd
-  ? parseFloat(fundData.amount) / parseFloat(cryptoRates[selectedCrypto].usd)
-  : null;
+    fundData && fundData.amount && selectedCrypto && cryptoRates[selectedCrypto]?.usd
+      ? parseFloat(fundData.amount) / parseFloat(cryptoRates[selectedCrypto].usd)
+      : null;
 
   const cryptoShortForms = {
     bitcoin: "btc",
@@ -33,7 +32,7 @@ export default function Payment() {
     tether: "usdt",
   };
 
-  const invoice = divisionResult !== null ? `${divisionResult.toFixed(4)} ${cryptoShortForms[selectedCrypto]}` : null
+  const invoice = divisionResult !== null ? `${divisionResult.toFixed(4)} ${cryptoShortForms[selectedCrypto]}` : null;
 
   useEffect(() => {
     // Retrieve token from local storage
@@ -43,6 +42,7 @@ export default function Payment() {
       return;
     }
 
+    // Fetch user data
     fetch("http://localhost:3001/userData", {
       method: "POST",
       crossDomain: true,
@@ -57,59 +57,114 @@ export default function Payment() {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userData");
-        setUserData(data.data);
+        if (data.status === "ok") {
+          setUserData(data.data);
+        } else {
+          console.error("Error fetching user data:", data.error);
+          navigate("/login"); // Redirect if there's an error
+        }
       });
 
-   // Fetch fund data
-   fetch("http://localhost:3001/fundData", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ token }), // Send token in the request body
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log(data, "fundData");
-      if (data.status === "ok") {
-        setFundData(data.data);
-      } else {
-        // Handle error, such as invalid token
-        console.error("Error fetching fund data:", data.error);
-      }
-    });
+    // Fetch fund data
+    fetch("http://localhost:3001/fundData", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }), // Send token in the request body
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "ok") {
+          setFundData(data.data);
+        } else {
+          console.error("Error fetching fund data:", data.error);
+        }
+      });
 
+    // Fetch crypto rates
     fetch(
       "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd"
     )
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         setCryptoRates(data);
       });
   }, [navigate]);
 
+  const handleProceed = async () => {
+
+    if (!selectedCrypto) {
+      alert("Please select a cryptocurrency.");
+      return;
+    }
+
+    const token = window.localStorage.getItem("token");
+
+    if (!token) return;
+
+    try {
+      const response = await fetch("http://localhost:3001/transactions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({
+          type: "Deposit",
+          amount: fundData.amount,
+          status: "Pending",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit transaction");
+      }
+
+      const data = await response.json();
+
+      if (data.status === "ok") {
+        alert("Transaction Successful");
+        // Optionally redirect the user or perform other actions
+      } else {
+        console.log("Error submitting transaction:", data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
+    navigate("/user/fund/payment/confirmation", {
+      state: { amount: fundData.amount, crypto: selectedCrypto },
+    });
+  };
+
   function closeNavigation() {
     setNavActive(false);
   }
-  
+
   return (
     <>
       <div className="container">
         <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
-          <img className="logo1" src={logo1} alt="logo" />
-          <img className="xmark" src={xmark} alt="logo" onClick={closeNavigation} />
+            <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
           </div>
 
           <ul>
             <li>
-              <Link to={"/user"} activeClassName="active">
+              <Link to={"/user"}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
-                <span className="title ">Dashboard</span>
+                <span className="title">Dashboard</span>
               </Link>
             </li>
             <li>
@@ -155,21 +210,21 @@ export default function Payment() {
               </svg>
             </div>
             <div className="user1">
-              <p>Welcome {userData.fname}</p>
+              <p>Welcome {userData?.fname}</p>
               <div className="user">
-                <img src={cus1} alt="profie-photo" />
+                <img src={cus1} alt="profile-photo" />
               </div>
             </div>
           </div>
           <div className="tab">
             <div className="bank">
               <div className="text5">
-                <h2>Pay ${fundData.amount}</h2>
+                <h2>Pay ${fundData?.amount}</h2>
                 <p>Make Payment</p>
                 <p>{invoice}</p>
               </div>
 
-              <form action="">
+              <form>
                 <label htmlFor="crypt">Select Crypto</label>
                 <br />
                 <select
@@ -178,12 +233,18 @@ export default function Payment() {
                   value={selectedCrypto}
                   onChange={(e) => setSelectedCrypto(e.target.value)}
                 >
-                  <option>Select Crypto</option>
+                  <option value="">Select Crypto</option>
                   <option value="bitcoin">Bitcoin BTC</option>
                   <option value="ethereum">Ethereum ETH</option>
                   <option value="tether">Tether USDT</option>
                 </select>
-                <button className="go">Proceed</button>
+                <button
+                  type="button"
+                  className="go"
+                  onClick={handleProceed}
+                >
+                  Proceed
+                </button>
               </form>
             </div>
           </div>
