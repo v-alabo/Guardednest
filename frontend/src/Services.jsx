@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "./assets/logo.png";
+import logo from "./assets/logosmall.png";
 import logo2 from "./assets/logo2.png"
 import serv1 from "./assets/services/1.png";
 import serv2 from "./assets/services/2.png";

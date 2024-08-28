@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "./assets/logo.png";
+import logo from "./assets/logosmall.png";
 import bar from "./assets/bar.svg";
 import xmark from "./assets/xmark.svg";
 import "./style/home.css";

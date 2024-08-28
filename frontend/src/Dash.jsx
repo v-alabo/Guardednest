@@ -4,8 +4,12 @@ import user from "./assets/user.png";
 import xmark from "./assets/xmark.svg";
 import "./style/dash.css";
 import { useState, useEffect } from "react";
+
 export default function Dash() {
   const [isNavActive, setNavActive] = useState(false);
+  const [userData, setUserData] = useState("");
+  const [imageData, setImageData] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
@@ -15,13 +19,16 @@ export default function Dash() {
     setNavActive(false);
   }
 
+  const statusLabels = {
+    success: "Success",
+    failed: "Failed",
+    progress: "Processing",
+    pending: "Pending",
+  };
+
   const logOut = () => {
     window.localStorage.clear();
   };
-
-  const [userData, setUserData] = useState("");
-  const [imageData, setImageData] = useState([]);
-  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
@@ -38,11 +45,8 @@ export default function Dash() {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userData");
-
         setUserData(data.data);
-
-        if (data.data == "token expired") {
+        if (data.data === "token expired") {
           alert("Token expired login again");
           window.localStorage.clear();
           window.location.href = "/login";
@@ -51,7 +55,6 @@ export default function Dash() {
   }, []);
 
   useEffect(() => {
-    // Fetch images when component mounts
     const fetchImageData = async () => {
       const token = window.localStorage.getItem("token");
       if (!token) return;
@@ -84,7 +87,6 @@ export default function Dash() {
 
     fetchImageData();
   }, []);
-
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -119,9 +121,6 @@ export default function Dash() {
 
     fetchTransactions();
   }, []);
-
-  console.log("User Data:", userData);
-  console.log("Image Data:", imageData);
 
   return (
     <>
@@ -231,39 +230,39 @@ export default function Dash() {
             </div>
             <div className="details">
               <div className="cardHeader">
-              <h2>Transactions</h2>
-              </div>
-              <div className="recentTransact">
-                {transactions.length === 0 ? (
-                  <p>No Transactions</p>
-                ) : (
-                  <table>
-                    <thead>
-                      <tr>
-                        <td>Transaction</td>
-                        <td>Amount</td>
-                        <td>Status</td>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactions.map((transaction, index) => (
-                        <tr key={index}>
-                          <td> {transaction.type} </td>
-                          <td> {transaction.amount} </td>
-                          <td>
-                            <span
-                              className={`status ${transaction.status
-                                .replace(" ", "")
-                                .toLowerCase()}`}
-                            >
-                              {transaction.status}
-                            </span>
-                          </td>
+                <h2>Transactions</h2>
+                <div className="recentTransact">
+                  {transactions.length === 0 ? (
+                    <p className="noTransact">No Transactions</p>
+                  ) : (
+                    <table>
+                      <thead>
+                        <tr>
+                          <td>Transaction</td>
+                          <td>Amount</td>
+                          <td>Status</td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+                      </thead>
+                      <tbody>
+                        {transactions.map((transaction, index) => (
+                          <tr key={index}>
+                            <td> {transaction.type} </td>
+                            <td> ${transaction.amount} </td>
+                            <td>
+                              <span
+                                className={`status ${transaction.status.toLowerCase()}`}
+                              >
+                                {statusLabels[
+                                  transaction.status.toLowerCase()
+                                ] || transaction.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
             </div>
           </div>

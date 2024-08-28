@@ -1,21 +1,94 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
+import xmark from "./assets/xmark.svg";
 import cus1 from "./assets/customer01.jpg";
 import "./style/dash.css";
 import { useState, useEffect } from "react";
 
-function Paypal() {
-  const [isNavActive, setNavActive] = useState(true);
+export default function Paypal() {
+  const [isNavActive, setNavActive] = useState(false);
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
   }
+
+  function closeNavigation() {
+    setNavActive(false);
+  }
+
   const logOut = () => {
     window.localStorage.clear();
   };
 
   const [userData, setUserData] = useState("");
-  
+  const [amount, setAmount] = useState("");
+  const [paypal, setPaypalEmail] = useState("");
+  const navigate = useNavigate();
+
+  const handleProceed = async () => {
+    const token = window.localStorage.getItem("token");
+
+    if (!token) {
+      alert("No token found. Please log in again.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3001/withdraw-paypal", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ paypal, amount, token }),
+      });
+
+      const data = await response.json();
+
+      if (data.status === "ok") {
+        console.log(data, "withdrawalMade");
+        alert("Withdrawal Made Successfully");
+
+        try {
+          const transactionResponse = await fetch(
+            "http://localhost:3001/transactions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({
+                type: "Withdrawal",
+                amount: amount,
+                status: "progress",
+              }),
+            }
+          );
+
+          const transactionData = await transactionResponse.json();
+
+          if (transactionData.status === "ok") {
+            alert("Transaction Successful");
+            navigate("/user");
+          } else {
+            console.log("Error submitting transaction:", transactionData.error);
+            alert("Error submitting transaction. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error submitting transaction:", error);
+        }
+      } else {
+        console.log("Error making withdrawal:", data.error);
+        alert("Error making withdrawal. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error making withdrawal:", error);
+    }
+  };
 
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
@@ -32,34 +105,32 @@ function Paypal() {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userData");
-   
         setUserData(data.data);
-
-        if (data.data == "token expired") {
+        if (data.data === "token expired") {
           alert("Token expired login again");
           window.localStorage.clear();
-          window.location.href = "./sign-in";
+          window.location.href = "/login";
         }
       });
-    }, []);
+  }, []);
 
-
-    return (
-      <>
-        <div className="container">
+  return (
+    <>
+      <div className="container">
         <div className={`navigation ${isNavActive ? "active" : ""}`}>
+          <div className="navbar">
+            <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
+          </div>
+
           <ul>
             <li>
-              <Link to="#">
-                <span className="icon">
-                  <img className="logo1" src={logo1} alt="logo" />
-                </span>
-                <span className="title"></span>
-              </Link>
-            </li>
-            <li>
-              <Link to={"/user"} activeClassName="active">
+              <Link to={"/user"}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
@@ -67,7 +138,7 @@ function Paypal() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/withdrawals"} >
+              <Link to={"/user/withdrawals"}>
                 <span className="icon">
                   <ion-icon name="wallet-outline"></ion-icon>
                 </span>
@@ -75,7 +146,7 @@ function Paypal() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/transactions"} >
+              <Link to={"/user/transactions"}>
                 <span className="icon">
                   <ion-icon name="stats-chart-outline"></ion-icon>
                 </span>
@@ -83,7 +154,7 @@ function Paypal() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/settings"} >
+              <Link to={"/user/settings"}>
                 <span className="icon">
                   <ion-icon name="settings-outline"></ion-icon>
                 </span>
@@ -91,7 +162,7 @@ function Paypal() {
               </Link>
             </li>
             <li>
-              <Link to={"/login"} onClick={logOut} >
+              <Link to={"/login"} onClick={logOut}>
                 <span className="icon">
                   <ion-icon name="log-out-outline"></ion-icon>
                 </span>
@@ -123,10 +194,22 @@ function Paypal() {
 
               <form action="">
                 <label htmlFor="amount">Amount</label>
-                <input type="number" id="amount" />
+                <input
+                  type="number"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
                 <label htmlFor="paypal">Paypal Email</label>
-                <input type="text" id="paypal" />
-                <button className="go">Submit</button>
+                <input
+                  type="text"
+                  id="paypal"
+                  value={paypal}
+                  onChange={(e) => setPaypalEmail(e.target.value)}
+                />
+                <button type="button" className="go" onClick={handleProceed}>
+                  Submit
+                </button>
               </form>
             </div>
           </div>
@@ -135,5 +218,3 @@ function Paypal() {
     </>
   );
 }
-
-export default Paypal;

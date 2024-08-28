@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
 import xmark from "./assets/xmark.svg";
 import cus1 from "./assets/customer01.jpg";
@@ -10,6 +10,7 @@ function Fund() {
   const [plan, setPlan] = useState("");
   const [amount, setAmount] = useState("");
   const [userData, setUserData] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserData();
@@ -86,7 +87,7 @@ function Fund() {
       .then((data) => {
         console.log(data, "fundCollected");
         alert("Funded Successfully");
-        window.location.href = ("/user/fund/payment");
+        navigate("/user/fund/payment");
       })
       .catch((error) => console.error("Error adding funds:", error));
   };

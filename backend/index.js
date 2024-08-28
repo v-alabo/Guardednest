@@ -9,6 +9,10 @@ const userModel = require("./models/User");
 const fundModel = require("./models/Fund");
 const imageModel = require("./models/Image");
 const transactionModel = require("./models/Transact");
+const withdrawModel = require("./models/Withdraw");
+const cashAppModel= require("./models/Cashapp")
+const cryptoModel =require("./models/Crypto")
+const payPalModel=require("./models/PayPal")
 const { connectDB } = require("./config/db");
 
 //Middleware
@@ -28,26 +32,6 @@ const JWT_SECRET =
 
 // db connect
 connectDB();
-
-// Login endpoint
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await userModel.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ error: "User Not Found" });
-    }
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (passwordMatch) {
-      const token = jwt.sign({ username: user.username }, JWT_SECRET);
-      return res.status(200).json({ status: "ok", data: token });
-    }
-    res.status(401).json({ status: "error", error: "Invalid Password" });
-  } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 // Registration endpoint
 app.post("/signup", async (req, res) => {
@@ -103,6 +87,43 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// Login endpoint
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await userModel.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: "User Not Found" });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (passwordMatch) {
+      const token = jwt.sign({ username: user.username }, JWT_SECRET);
+      return res.status(200).json({ status: "ok", data: token });
+    }
+    res.status(401).json({ status: "error", error: "Invalid Password" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/users", async (req, res) => {
+  const { username, email } = req.query; // Use req.query for GET requests
+
+  try {
+    const query = {};
+    if (username) query.username = username;
+    if (email) query.email = email;
+
+    const users = await userModel.find(query);
+    res.json({ status: "ok", data: users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ status: "error", error: "Failed to fetch users" });
+  }
+});
+
 
 app.post("/userData", async (req, res) => {
   const { token } = req.body;
@@ -261,15 +282,9 @@ app.post("/transactions", async (req, res) => {
     const decodedToken = jwt.verify(token, JWT_SECRET);
     const username = decodedToken.username;
 
-    const fund = await fundModel.findOne({ username });
 
-    if (!fund) {
-      return res.status(404).json({ status: "error", error: "Fund not found" });
-    }
-
-    const { type, status } = req.body;
-    const amount = fund.amount;
-
+    const { type, status, amount } = req.body;
+   
     const newTransaction = new transactionModel({
       username,
       type,
@@ -319,6 +334,213 @@ app.get("/transactions", async (req, res) => {
       .json({ status: "error", error: "Failed to fetch transactions" });
   }
 });
+
+app.patch("/transactions-update", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res.status(401).json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+    const { id, status } = req.body; // Extract id and status from request body
+
+    if (!id || !status) {
+      return res.status(400).json({ status: "error", error: "Missing transaction ID or status" });
+    }
+
+    // Update the specific transaction for the user
+    const updatedTransaction = await transactionModel.findOneAndUpdate(
+      { _id: id, username },
+      { status },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedTransaction) {
+      return res.status(404).json({ status: "error", error: "Transaction not found or does not belong to the user" });
+    }
+
+    res.json({ status: "ok", data: updatedTransaction });
+  } catch (error) {
+    console.error("Error updating transaction status:", error);
+    res.status(500).json({ status: "error", error: "Failed to update status" });
+  }
+});
+
+// Add this route to your backend
+app.post("/transactions-add", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const { username, type, amount, status } = req.body; // Extract transaction details from the request body
+
+    // Check if the required fields are present
+    if (!username || !type || !amount || !status) {
+      return res.status(400).json({ status: "error", error: "Missing required fields" });
+    }
+
+    // Create a new transaction
+    const newTransaction = new transactionModel({
+      username,
+      type,
+      amount,
+      status,
+      created_at: new Date(),
+    });
+
+    await newTransaction.save(); // Save the new transaction to the database
+
+    res.json({ status: "ok", data: newTransaction });
+  } catch (error) {
+    console.error("Error adding transaction:", error);
+    res.status(500).json({ status: "error", error: "Failed to add transaction" });
+  }
+});
+
+
+
+app.post("/withdraw-bank", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+
+
+    const { acctnum, amount, acctname,bank } = req.body;
+    const newWithdrawal = new withdrawModel({
+      username,
+      acctname,
+      acctnum,
+      amount,
+      bank
+    });
+
+    await newWithdrawal.save();
+
+    res.json({ status: "ok", data: newWithdrawal });
+  } catch (error) {
+    console.error("Error creating newWithdrawal:", error);
+    res
+      .status(500)
+      .json({ status: "error", error: "Failed to create newWithdrawal" });
+  }
+});
+
+app.post("/withdraw-cashapp", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+
+
+    const { cashtag, amount, } = req.body;
+    const newCashapp = new cashAppModel({
+      username,
+      cashtag,
+      amount
+    });
+
+    await newCashapp.save();
+
+    res.json({ status: "ok", data: newCashapp });
+  } catch (error) {
+    console.error("Error creating newCashapp:", error);
+    res
+      .status(500)
+      .json({ status: "error", error: "Failed to create newCashapp" });
+  }
+});
+
+app.post("/withdraw-crypto", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+
+
+    const { wallet, amount, } = req.body;
+    const newCrypto = new cryptoModel({
+      username,
+      wallet,
+      amount
+    });
+
+    await newCrypto.save();
+
+    res.json({ status: "ok", data: newCrypto });
+  } catch (error) {
+    console.error("Error creating newCrypto:", error);
+    res
+      .status(500)
+      .json({ status: "error", error: "Failed to create newCrypto" });
+  }
+});
+
+app.post("/withdraw-paypal", async (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
+
+  if (!token) {
+    console.error("No token provided");
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+
+
+    const { paypal, amount, } = req.body;
+    const newPayPal = new payPalModel({
+      username,
+      paypal,
+      amount
+    });
+
+    await newPayPal.save();
+
+    res.json({ status: "ok", data: newPayPal });
+  } catch (error) {
+    console.error("Error creating newPayPal:", error);
+    res
+      .status(500)
+      .json({ status: "error", error: "Failed to create newPayPal" });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

@@ -6,7 +6,7 @@ import "./style/dash.css";
 import { useState, useEffect } from "react";
 
 function Select() {
-  const [isNavActive, setNavActive] = useState(true);
+  const [isNavActive, setNavActive] = useState(false);
 
   function toggleNavigation() {
     setNavActive(!isNavActive);

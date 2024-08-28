@@ -115,7 +115,7 @@ export default function Payment() {
         body: JSON.stringify({
           type: "Deposit",
           amount: fundData.amount,
-          status: "Pending",
+          status: "pending",
         }),
       });
 

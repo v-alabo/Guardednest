@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
 import cus1 from "./assets/customer01.jpg";
 import xmark from "./assets/xmark.svg";
 import "./style/dash.css";
 import { useState, useEffect } from "react";
 
-function Cashapp() {
+export default function Cashapp() {
   const [isNavActive, setNavActive] = useState(false);
 
   function toggleNavigation() {
@@ -21,15 +21,81 @@ function Cashapp() {
   };
 
   const [userData, setUserData] = useState("");
+  const [amount, setAmount] = useState("");
+  const [cashtag, setCashTag] = useState("");
+  const navigate = useNavigate();
+
+  const handleProceed = async () => {
+    const token = window.localStorage.getItem("token");
+
+    if (!token) {
+      alert("No token found. Please log in again.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3001/withdraw-cashapp", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ cashtag, amount, token }),
+      });
+
+      const data = await response.json();
+
+      if (data.status === "ok") {
+        console.log(data, "withdrawalMade");
+        alert("Withdrawal Made Successfully");
+
+        try {
+          const transactionResponse = await fetch(
+            "http://localhost:3001/transactions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({
+                type: "Withdrawal to Cashapp",
+                amount: amount,
+                status: "progress",
+              }),
+            }
+          );
+
+          const transactionData = await transactionResponse.json();
+
+          if (transactionData.status === "ok") {
+            alert("Transaction Successful");
+           // navigate("/user");
+          } else {
+            console.log("Error submitting transaction:", transactionData.error);
+            alert("Error submitting transaction. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error submitting transaction:", error);
+        }
+      } else {
+        console.log("Error making withdrawal:", data.error);
+        alert("Error making withdrawal. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error making withdrawal:", error);
+    }
+  };
 
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
       method: "POST",
-      crossDomain: true,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
         token: window.localStorage.getItem("token"),
@@ -39,13 +105,17 @@ function Cashapp() {
       .then((data) => {
         console.log(data, "userData");
 
-        setUserData(data.data);
-
-        if (data.data == "token expired") {
-          alert("Token expired login again");
+        if (data.status === "ok") {
+          setUserData(data.data);
+        } else if (data.data === "token expired") {
+          alert("Token expired. Please log in again.");
           window.localStorage.clear();
-          window.location.href = "/login";
+          navigate("/login");
         }
+      })
+      .catch((error) => {
+        console.error("Error fetching user data:", error);
+        alert("Error fetching user data. Please try again.");
       });
   }, []);
 
@@ -54,8 +124,13 @@ function Cashapp() {
       <div className="container">
         <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
-          <img className="logo1" src={logo1} alt="logo" />
-          <img className="xmark" src={xmark} alt="logo" onClick={closeNavigation} />
+            <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
           </div>
 
           <ul>
@@ -124,10 +199,22 @@ function Cashapp() {
 
               <form action="">
                 <label htmlFor="amount">Amount</label>
-                <input type="number" id="amount" />
+                <input
+                  type="number"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
                 <label htmlFor="cashtag">Cash Tag</label>
-                <input type="text" id="cashtag" />
-                <button className="go">Submit</button>
+                <input
+                  type="text"
+                  id="cashtag"
+                  value={cashtag}
+                  onChange={(e) => setCashTag(e.target.value)}
+                />
+                <button type="button" className="go" onClick={handleProceed}>
+                  Submit
+                </button>
               </form>
             </div>
           </div>
@@ -136,5 +223,3 @@ function Cashapp() {
     </>
   );
 }
-
-export default Cashapp;

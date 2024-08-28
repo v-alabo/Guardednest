@@ -1,12 +1,15 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
+import user from "./assets/user.png";
 import xmark from "./assets/xmark.svg";
-import cus1 from "./assets/customer01.jpg";
 import "./style/dash.css";
 import { useState, useEffect } from "react";
 
-export default function Crypto() {
+export default function Transactions() {
   const [isNavActive, setNavActive] = useState(false);
+  const [userData, setUserData] = useState("");
+  const [imageData, setImageData] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
@@ -16,78 +19,15 @@ export default function Crypto() {
     setNavActive(false);
   }
 
-  const logOut = () => {
-    window.localStorage.clear();
+  const statusLabels = {
+    success: "Success",
+    failed: "Failed",
+    progress: "Ongoing",
+    pending: "Pending",
   };
 
-  const [userData, setUserData] = useState("");
-  const [amount, setAmount] = useState("");
-  const [wallet, setWalletAddress] = useState("");
-  const navigate = useNavigate();
-
-  const handleProceed = async () => {
-    const token = window.localStorage.getItem("token");
-
-    if (!token) {
-      alert("No token found. Please log in again.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:3001/withdraw-crypto", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({ wallet, amount, token }),
-      });
-
-      const data = await response.json();
-
-      if (data.status === "ok") {
-        console.log(data, "withdrawalMade");
-        alert("Withdrawal Made Successfully");
-
-        try {
-          const transactionResponse = await fetch(
-            "http://localhost:3001/transactions",
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify({
-                type: "Withdrawal to Crypto",
-                amount: amount,
-                status: "progress",
-              }),
-            }
-          );
-
-          const transactionData = await transactionResponse.json();
-
-          if (transactionData.status === "ok") {
-            alert("Transaction Successful");
-            navigate("/user");
-          } else {
-            console.log("Error submitting transaction:", transactionData.error);
-            alert("Error submitting transaction. Please try again.");
-          }
-        } catch (error) {
-          console.error("Error submitting transaction:", error);
-        }
-      } else {
-        console.log("Error making withdrawal:", data.error);
-        alert("Error making withdrawal. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error making withdrawal:", error);
-    }
+  const logOut = () => {
+    window.localStorage.clear();
   };
 
   useEffect(() => {
@@ -112,6 +52,74 @@ export default function Crypto() {
           window.location.href = "/login";
         }
       });
+  }, []);
+
+  useEffect(() => {
+    const fetchImageData = async () => {
+      const token = window.localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:3001/imageData", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch images");
+        }
+
+        const data = await response.json();
+        if (data.status === "ok") {
+          setImageData(data.data);
+        } else {
+          console.error("Error fetching images:", data.error);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchImageData();
+  }, []);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const token = window.localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:3001/transactions", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch transactions");
+        }
+
+        const data = await response.json();
+        if (data.status === "ok") {
+          setTransactions(data.data);
+        } else {
+          console.error("Error fetching transactions:", data.error);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchTransactions();
   }, []);
 
   return (
@@ -179,47 +187,48 @@ export default function Crypto() {
                 <path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z" />
               </svg>
             </div>
+
             <div className="user1">
               <p>Welcome {userData.fname}</p>
               <div className="user">
-                <img src={cus1} alt="profie-photo" />
+                <img src={imageData?.url || user} />
               </div>
             </div>
           </div>
-          <div className="tab">
-            <div className="bank">
-              <div className="text5">
-                <h2>Withdraw to Crypto</h2>
-              </div>
 
-              <form action="">
-                <label htmlFor="crypt">Crypto Currency</label>
-                <br />
-                <select name="" id="crypt">
-                  <option value=""></option>
-                  <option value="Bitcoin BTC">Bitcoin BTC</option>
-                  <option value="Ethereum ETH">Ethereum ETH</option>
-                  <option value="Tether USDT">Tether USDT</option>
-                </select>
-                <br />
-                <label htmlFor="amount">Amount</label>
-                <input
-                  type="number"
-                  id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-                <label htmlFor="wallet">Wallet Address</label>
-                <input
-                  type="text"
-                  id="wallet"
-                  value={wallet}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                />
-                <button type="button" className="go" onClick={handleProceed}>
-                  Submit
-                </button>
-              </form>
+          <div className="details">
+            <div className="cardHeader">
+              <div className="recentTransact">
+                {transactions.length === 0 ? (
+                  <p className="noTransact">No Transactions</p>
+                ) : (
+                  <table>
+                    <thead>
+                      <tr>
+                        <td>Transaction</td>
+                        <td>Amount</td>
+                        <td>Status</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((transaction, index) => (
+                        <tr key={index}>
+                          <td> {transaction.type} </td>
+                          <td> ${transaction.amount} </td>
+                          <td>
+                            <span
+                              className={`status ${transaction.status.toLowerCase()}`}
+                            >
+                              {statusLabels[transaction.status.toLowerCase()] ||
+                                transaction.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -227,4 +236,3 @@ export default function Crypto() {
     </>
   );
 }
-

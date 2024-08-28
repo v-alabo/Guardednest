@@ -19,6 +19,10 @@ import Payment from './Payment'
 import Confirmation from './Confirmation'
 import Settings from './Settings'
 import Photo from './Photo'
+import Transactions from './Transactions'
+import Admin from './Admin/Admin'
+import UserCard from './Admin/UserCard'
+import AdminTransaction from './Admin/AdminTransaction';
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 
@@ -50,7 +54,11 @@ function App() {
         <Route path='/user/withdrawals/select/cashapp' element={<Cashapp />}></Route>
         <Route path='/user/settings' element={<Settings />}></Route>
         <Route path='/user/settings/photo' element={<Photo />}></Route>
-        
+        <Route path='/user/transactions' element={<Transactions />}></Route>
+        <Route path='/admin' element={<Admin />}></Route>
+        <Route path='/admin/usercard/:username' element={<UserCard />}></Route>
+        <Route path='/admin/transactions/:username' element={<AdminTransaction />}></Route>
+
       </Routes>
       </BrowserRouter>
     );
