@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo1 from "../assets/logosmall.png";
 import xmark from "../assets/xmark.svg";
 import "../style/dash.css";
 import { useState, useEffect } from "react";
 export default function Settings() {
-  const [isNavActive, setNavActive] = useState(true);
+  const [isNavActive, setNavActive] = useState(false);
+  const navigate = useNavigate();
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
@@ -66,6 +67,7 @@ export default function Settings() {
         }
       });
   }, []);
+  
   function closeNavigation() {
     setNavActive(false);
   }
@@ -147,7 +149,7 @@ export default function Settings() {
               </Link>
             </div>
 
-            <div className="email">
+            <div className="emailo">
               <Link>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -159,6 +161,7 @@ export default function Settings() {
                 <p>Update Email</p>
               </Link>
             </div>
+
             <div className="password">
               <Link>
                 <svg

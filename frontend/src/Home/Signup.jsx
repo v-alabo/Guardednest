@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logosmall.png";
+import logo2 from "../assets/logo2.png";
 import bar from "../assets/bar.svg";
 import xmark from "../assets/xmark.svg";
+import goog from "../assets/google.svg";
 import "../style/home.css";
 
 export default function Signup() {
@@ -128,7 +130,7 @@ export default function Signup() {
                 clients in over 150 countries worldwide.
               </p>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="form1">
               <div>
                 <label htmlFor="username">Username</label>
                 <input
@@ -443,6 +445,25 @@ export default function Signup() {
                 Register
               </button>
             </form>
+
+            <div className="signup">
+              <p>
+                {" "}
+                Already have an account? <Link to="/login">Login</Link>
+              </p>
+            </div>
+            <div className="divider">
+              <span className="or">or</span>
+            </div>
+            <div className="google-sect">
+              <Link href="#">
+                <span>
+                  <img src={goog} alt="google icon" />
+                </span>
+                Continue with google{" "}
+              </Link>
+              <br />
+            </div>
           </div>
         </div>
       </div>
@@ -450,7 +471,7 @@ export default function Signup() {
       <footer>
         <div className="foot">
           <div className="col0">
-            <img src={logo} alt="logo" />
+            <img src={logo2} alt="logo" />
             <h3>
               Welcome to our investment site! We offer the best,
               <br />

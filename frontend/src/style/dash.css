@@ -600,7 +600,7 @@ text-align: center;
   top: 9px;
 }
 
-.email{
+.emailo{
   font-size: 29px;
   position: relative;
   padding: 25px 50px;
@@ -608,7 +608,7 @@ text-align: center;
   margin-bottom: 20px;
 }
 
-.email svg{
+.emailo svg{
   padding: 8px;
   background-color: #cb8d39;
   border-radius: 10px;
@@ -705,11 +705,11 @@ text-align: center;
 
   .navigation.active {
     width: 100%;
-    left: 0;
+    left: 10px;
   }
 
   .navigation.active ~ .main{
-    display: none;
+    display: block;
     transition: 0.5s ease;
   }
 
@@ -738,7 +738,7 @@ text-align: center;
   .xmark{
     display: flex;
     float: right;
-    margin-right: 10px;
+    margin-right: 15px;
     margin-top: 7px;
   }
 

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import logo from "../assets/logosmall.png";
+import logo2 from "../assets/logo2.png";
 import bar from "../assets/bar.svg";
 import xmark from "../assets/xmark.svg";
 import "../style/home.css";
@@ -115,7 +116,7 @@ function Contact() {
                 rows="6"
                 placeholder="Your Message"
               ></textarea>
-              <button className="btn2" type="submit">
+              <button className="btn6" type="submit">
                 Submit
               </button>
             </form>
@@ -127,7 +128,7 @@ function Contact() {
       <footer>
         <div className="foot">
           <div className="col0">
-            <img src={logo} alt="logo" />
+            <img src={logo2} alt="logo" />
             <h3>
               Welcome to our investment site! We offer the best,
               <br />

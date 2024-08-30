@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logosmall.png";
+import logo2 from "../assets/logo2.png";
 import bar from "../assets/bar.svg";
 import xmark from "../assets/xmark.svg";
 import goog from "../assets/google.svg";
@@ -88,12 +89,12 @@ export default function Login() {
             </div>
 
             <div className="google-sect">
-              <a href="#">
+              <Link href="#">
                 <span>
                   <img src={goog} alt="google icon" />
                 </span>
                 Continue with google{" "}
-              </a>
+              </Link>
               <br />
             </div>
             <div className="divider">
@@ -139,7 +140,7 @@ export default function Login() {
       <footer>
         <div className="foot">
           <div className="col0">
-            <img src={logo} alt="logo" />
+            <img src={logo2} alt="logo" />
             <h3>
               Welcome to our investment site! We offer the best,
               <br />

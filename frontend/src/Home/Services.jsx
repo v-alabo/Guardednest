@@ -149,7 +149,7 @@ function Services() {
           <div className="price-info">
             <div className="amount">
               <h5>Starter</h5>
-              <h2>$100</h2>
+              <h1>$100</h1>
             </div>
             <p>
               Min Deposit $100
@@ -166,7 +166,7 @@ function Services() {
           <div className="price-info">
           <div className="amount">
               <h5>Regular</h5>
-              <h2>$500</h2>
+              <h1>$500</h1>
             </div>
             <p>
               Min Deposit $500
@@ -183,7 +183,7 @@ function Services() {
           <div className="price-info">
           <div className="amount">
               <h5>Premium</h5>
-              <h2>$2500</h2>
+              <h1>$2500</h1>
             </div>
             <p>
               Min Deposit $2500
@@ -200,7 +200,7 @@ function Services() {
           <div className="price-info">
           <div className="amount">
               <h5>Classic</h5>
-              <h2>$5500</h2>
+              <h1>$5500</h1>
             </div>
             <p>
               Min Deposit $5500
