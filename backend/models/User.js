@@ -9,7 +9,9 @@ const userSchema = new mongoose.Schema({
     country: String,
     phone: Number,
     email: {type:String,unique:true},
-    password: String
+    password: String,
+    balance: Number,
+    profit: Number
 })
 
 const userModel = mongoose.model("users", userSchema);

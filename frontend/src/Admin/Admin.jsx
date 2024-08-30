@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 export default function Admin() {
   const [isNavActive, setNavActive] = useState(false);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
 
   function toggleNavigation() {

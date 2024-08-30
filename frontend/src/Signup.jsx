@@ -54,6 +54,8 @@ export default function Signup() {
             phone,
             email,
             password,
+            balance: "--",
+            profit: "--",
           }),
         });
     

@@ -124,6 +124,20 @@ app.get("/users", async (req, res) => {
   }
 });
 
+app.post("/saveData", (req, res) => {
+  const { balance, profit } = req.body;
+  const token = req.headers.authorization.split(" ")[1];
+
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const username = decodedToken.username;
+  // Save balance and profit to the database
+  const saveData =  userModel.updateOne({ username}, { balance, profit })
+    .then(() => res.json({ status: "ok", data: saveData }))
+    .catch((error) =>
+      res.json({ status: "error", error: "Failed to save user data" })
+    );
+});
+
 
 app.post("/userData", async (req, res) => {
   const { token } = req.body;

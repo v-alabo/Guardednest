@@ -304,7 +304,8 @@
   }
   
   button{
-    padding: 8px 16px;
+    padding: 11px 16px;
+    margin-left: 20px;
     font-size: 1rem;
     color: #fff;
     background-color: #007BFF;
@@ -322,13 +323,16 @@
 
   .newTransact{
     text-align: center;
+    padding: 20px 6%;
   }
 
   .newTransact form{
-    width: 100%;
     padding: 40px;
   }
 
-  .newTransact .newForm input ,select{
-    padding: 30px;
+  .newSelect{
+    padding:8px 30px;
+    border-radius: 4px;
+    font-size: 20px;
+    margin-right: 5px;
   }

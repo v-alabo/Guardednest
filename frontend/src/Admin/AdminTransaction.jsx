@@ -269,7 +269,7 @@ export default function AdminTransaction() {
                           <td>${transaction.amount}</td>
                           <td>{transaction.status}</td>
                           <td>
-                            <select
+                            <select className="newSelect" 
                               value={
                                 statusUpdates[transaction._id] ||
                                 transaction.status
@@ -304,9 +304,9 @@ export default function AdminTransaction() {
               </div>
             </div>
           </div>
-          <div className="newTransact">
-            <form className="newForm" onSubmit={handleAddTransaction} >
-              <select
+          <div  className="newTransact">
+            <form onSubmit={handleAddTransaction} >
+              <select className="newSelect"
                 name="username"
                 value={newTransaction.username}
                 onChange={handleInputChange}
@@ -319,7 +319,7 @@ export default function AdminTransaction() {
                   </option>
                 ))}
               </select>
-              <select
+              <select  className="newSelect"
                 name="type"
                 value={newTransaction.type}
                 onChange={handleInputChange}
@@ -327,11 +327,11 @@ export default function AdminTransaction() {
               >
                 <option value="">Select Type</option>
                 <option value="Deposit">Deposit</option>
-                <option value="Failed">Withdrwal</option>
+                <option value="Withdrawal">Withdrawal</option>
                 <option value="Transfer">Transfer</option>
                 <option value="Profit">Profit</option>
               </select>
-              <input
+              <input className="newSelect" 
                 type="number"
                 name="amount"
                 placeholder="Amount"
@@ -339,7 +339,7 @@ export default function AdminTransaction() {
                 onChange={handleInputChange}
                 required
               />
-              <select
+              <select className="newSelect"
                 name="status"
                 value={newTransaction.status}
                 onChange={handleInputChange}
