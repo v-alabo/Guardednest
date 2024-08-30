@@ -10,8 +10,6 @@ const userSchema = new mongoose.Schema({
     phone: Number,
     email: {type:String,unique:true},
     password: String,
-    balance: Number,
-    profit: Number
 })
 
 const userModel = mongoose.model("users", userSchema);

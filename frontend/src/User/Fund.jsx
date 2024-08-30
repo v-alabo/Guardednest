@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import logo1 from "./assets/logosmall.png";
-import xmark from "./assets/xmark.svg";
-import cus1 from "./assets/customer01.jpg";
-import "./style/dash.css";
+import logo1 from "../assets/logosmall.png";
+import xmark from "../assets/xmark.svg";
+import "../style/dash.css";
 import { useState, useEffect } from "react";
 
 function Fund() {
@@ -43,9 +42,34 @@ function Fund() {
     setNavActive(false);
   }
 
-  const logOut = () => {
+  const logOut = async () => {
+    const token = window.localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch("http://localhost:3001/saveData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ balance, profit }),
+      });
+
+      const data = await response.json();
+      if (data.status === "ok") {
+        console.log("Balance and profit saved successfully.");
+      } else {
+        console.error("Error saving balance and profit:", data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
     window.localStorage.clear();
-  };
+    navigate("/login");
+  }
 
   const handlePlanChange = (e) => {
     const selectedPlan = e.target.value;
@@ -153,9 +177,6 @@ function Fund() {
             </div>
             <div className="user1">
               <p>Welcome {userData.fname}</p>
-              <div className="user">
-                <img src={cus1} alt="profie-photo" />
-              </div>
             </div>
           </div>
           <div className="tab">

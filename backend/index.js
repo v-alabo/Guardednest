@@ -7,12 +7,9 @@ const multer = require("multer");
 const path = require("path");
 const userModel = require("./models/User");
 const fundModel = require("./models/Fund");
-const imageModel = require("./models/Image");
 const transactionModel = require("./models/Transact");
 const withdrawModel = require("./models/Withdraw");
-const cashAppModel= require("./models/Cashapp")
-const cryptoModel =require("./models/Crypto")
-const payPalModel=require("./models/PayPal")
+const incomeModel= require("./models/Income");
 const { connectDB } = require("./config/db");
 
 //Middleware
@@ -131,7 +128,7 @@ app.post("/saveData", (req, res) => {
     const decodedToken = jwt.verify(token, JWT_SECRET);
     const username = decodedToken.username;
   // Save balance and profit to the database
-  const saveData =  userModel.updateOne({ username}, { balance, profit })
+  const saveData =  incomeModel.updateOne({ username}, { balance, profit }, { new: true, upsert: true })
     .then(() => res.json({ status: "ok", data: saveData }))
     .catch((error) =>
       res.json({ status: "error", error: "Failed to save user data" })
@@ -208,77 +205,6 @@ app.post("/fundData", async (req, res) => {
   } catch (error) {
     console.error("Error:", error);
     return res.status(400).json({ error: "Invalid token" });
-  }
-});
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "../frontend/src/images");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage: storage });
-
-app.post("/upload", upload.single("image"), async (req, res) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
-
-  if (!token) {
-    console.error("No token provided");
-    return res
-      .status(401)
-      .json({ success: false, message: "No token provided" });
-  }
-
-  try {
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username;
-
-    // Log file info for debugging
-    console.log("File info:", req.file);
-
-    const image_filename = req.file.filename;
-    const image_path = req.file.path; // Full path to the file
-    const image_url = `http://localhost:3001/uploads/${image_filename}`; // Construct URL if needed
-
-    const image = new imageModel({
-      username: req.body.username || username, // Default to token username if not provided in body
-      path: image_path,
-      filename: image_filename,
-      url: image_url,
-    });
-
-    try {
-      await image.save();
-      res
-        .status(201)
-        .json({ success: true, message: "Photo added", url: image_url });
-    } catch (error) {
-      console.error("Error saving image:", error);
-      res.status(500).json({ success: false, message: "Error saving photo" });
-    }
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    res
-      .status(401)
-      .json({ success: false, message: "Invalid or expired token" });
-  }
-});
-
-app.get("/imageData", async (req, res) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
-  try {
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username;
-    const images = await imageModel.findOne({ username });
-    return res.status(200).json({ status: "ok", data: images });
-  } catch (error) {
-    console.error("Error:", error);
-    return res
-      .status(500)
-      .json({ status: "error", error: "Internal Server Error" });
   }
 });
 
@@ -421,7 +347,7 @@ app.post("/transactions-add", async (req, res) => {
 
 
 
-app.post("/withdraw-bank", async (req, res) => {
+app.post("/withdraw", async (req, res) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
 
   if (!token) {
@@ -436,13 +362,16 @@ app.post("/withdraw-bank", async (req, res) => {
     const username = decodedToken.username;
 
 
-    const { acctnum, amount, acctname,bank } = req.body;
+    const { acctnum, amount, acctname, bank, paypal, wallet, cashtag } = req.body;
     const newWithdrawal = new withdrawModel({
       username,
       acctname,
       acctnum,
       amount,
-      bank
+      bank,
+      paypal,
+      wallet,
+      cashtag 
     });
 
     await newWithdrawal.save();

@@ -305,7 +305,6 @@
   
   button{
     padding: 11px 16px;
-    margin-left: 20px;
     font-size: 1rem;
     color: #fff;
     background-color: #007BFF;
@@ -335,4 +334,15 @@
     border-radius: 4px;
     font-size: 20px;
     margin-right: 5px;
+  }
+
+  .proceed{
+    padding: 11px 16px;
+    margin-left: 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
   }

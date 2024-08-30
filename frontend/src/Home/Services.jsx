@@ -1,16 +1,16 @@
 import { Link } from "react-router-dom";
-import logo from "./assets/logosmall.png";
-import logo2 from "./assets/logo2.png"
-import serv1 from "./assets/services/1.png";
-import serv2 from "./assets/services/2.png";
-import serv3 from "./assets/services/3.png";
-import serv4 from "./assets/services/4.png";
-import serv5 from "./assets/services/5.png";
-import serv6 from "./assets/services/6.png";
-import bar from "./assets/bar.svg";
-import xmark from "./assets/xmark.svg";
+import logo from "../assets/logosmall.png";
+import logo2 from "../assets/logo2.png"
+import serv1 from "../assets/services/1.png";
+import serv2 from "../assets/services/2.png";
+import serv3 from "../assets/services/3.png";
+import serv4 from "../assets/services/4.png";
+import serv5 from "../assets/services/5.png";
+import serv6 from "../assets/services/6.png";
+import bar from "../assets/bar.svg";
+import xmark from "../assets/xmark.svg";
 import { useState } from "react";
-import "./style/home.css";
+import "../style/home.css";
 
 function Services() {
   const [isNavActive, setNavActive] = useState(false);

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "./assets/logosmall.png";
-import bar from "./assets/bar.svg";
-import xmark from "./assets/xmark.svg";
-import "./style/home.css";
+import logo from "../assets/logosmall.png";
+import bar from "../assets/bar.svg";
+import xmark from "../assets/xmark.svg";
+import "../style/home.css";
 
 export default function Signup() {
   const [username, setUserName] = useState("");

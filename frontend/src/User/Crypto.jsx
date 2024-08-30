@@ -1,11 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import logo1 from "./assets/logosmall.png";
-import cus1 from "./assets/customer01.jpg";
-import xmark from "./assets/xmark.svg";
-import "./style/dash.css";
+import logo1 from "../assets/logosmall.png";
+import xmark from "../assets/xmark.svg";
+import "../style/dash.css";
 import { useState, useEffect } from "react";
 
-export default function Cashapp() {
+export default function Crypto() {
   const [isNavActive, setNavActive] = useState(false);
 
   function toggleNavigation() {
@@ -16,13 +15,38 @@ export default function Cashapp() {
     setNavActive(false);
   }
 
-  const logOut = () => {
+  const logOut = async () => {
+    const token = window.localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch("http://localhost:3001/saveData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ balance, profit }),
+      });
+
+      const data = await response.json();
+      if (data.status === "ok") {
+        console.log("Balance and profit saved successfully.");
+      } else {
+        console.error("Error saving balance and profit:", data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
     window.localStorage.clear();
-  };
+    navigate("/login");
+  }
 
   const [userData, setUserData] = useState("");
   const [amount, setAmount] = useState("");
-  const [cashtag, setCashTag] = useState("");
+  const [wallet, setWalletAddress] = useState("");
   const navigate = useNavigate();
 
   const handleProceed = async () => {
@@ -34,7 +58,7 @@ export default function Cashapp() {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/withdraw-cashapp", {
+      const response = await fetch("http://localhost:3001/withdraw", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,7 +66,16 @@ export default function Cashapp() {
           Accept: "application/json",
           "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({ cashtag, amount, token }),
+        body: JSON.stringify({
+          acctname: "--",
+          acctnum: "0", 
+          bank: "--", 
+          amount,
+          cashtag: "--",
+          wallet,
+          paypal: "--",  
+          token 
+         }),
       });
 
       const data = await response.json();
@@ -62,7 +95,8 @@ export default function Cashapp() {
                 Accept: "application/json",
               },
               body: JSON.stringify({
-                type: "Withdrawal to Cashapp",
+                type: "Withdraw",
+               // description: "Withdrawal to Crypto",
                 amount: amount,
                 status: "progress",
               }),
@@ -73,7 +107,7 @@ export default function Cashapp() {
 
           if (transactionData.status === "ok") {
             alert("Transaction Successful");
-           // navigate("/user");
+            navigate("/user");
           } else {
             console.log("Error submitting transaction:", transactionData.error);
             alert("Error submitting transaction. Please try again.");
@@ -93,9 +127,11 @@ export default function Cashapp() {
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
       method: "POST",
+      crossDomain: true,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
         token: window.localStorage.getItem("token"),
@@ -103,19 +139,12 @@ export default function Cashapp() {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userData");
-
-        if (data.status === "ok") {
-          setUserData(data.data);
-        } else if (data.data === "token expired") {
-          alert("Token expired. Please log in again.");
+        setUserData(data.data);
+        if (data.data === "token expired") {
+          alert("Token expired login again");
           window.localStorage.clear();
-          navigate("/login");
+          window.location.href = "/login";
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching user data:", error);
-        alert("Error fetching user data. Please try again.");
       });
   }, []);
 
@@ -135,7 +164,7 @@ export default function Cashapp() {
 
           <ul>
             <li>
-              <Link to={"/user"} activeClassName="active">
+              <Link to={"/user"}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
@@ -186,18 +215,24 @@ export default function Cashapp() {
             </div>
             <div className="user1">
               <p>Welcome {userData.fname}</p>
-              <div className="user">
-                <img src={cus1} alt="profie-photo" />
-              </div>
             </div>
           </div>
           <div className="tab">
             <div className="bank">
               <div className="text5">
-                <h2>Withdraw to CashApp</h2>
+                <h2>Withdraw to Crypto</h2>
               </div>
 
               <form action="">
+                <label htmlFor="crypt">Crypto Currency</label>
+                <br />
+                <select name="" id="crypt">
+                  <option value=""></option>
+                  <option value="Bitcoin BTC">Bitcoin BTC</option>
+                  <option value="Ethereum ETH">Ethereum ETH</option>
+                  <option value="Tether USDT">Tether USDT</option>
+                </select>
+                <br />
                 <label htmlFor="amount">Amount</label>
                 <input
                   type="number"
@@ -205,12 +240,12 @@ export default function Cashapp() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
-                <label htmlFor="cashtag">Cash Tag</label>
+                <label htmlFor="wallet">Wallet Address</label>
                 <input
                   type="text"
-                  id="cashtag"
-                  value={cashtag}
-                  onChange={(e) => setCashTag(e.target.value)}
+                  id="wallet"
+                  value={wallet}
+                  onChange={(e) => setWalletAddress(e.target.value)}
                 />
                 <button type="button" className="go" onClick={handleProceed}>
                   Submit
@@ -223,3 +258,4 @@ export default function Cashapp() {
     </>
   );
 }
+

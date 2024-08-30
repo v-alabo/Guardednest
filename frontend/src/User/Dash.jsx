@@ -1,17 +1,16 @@
-import { Link } from "react-router-dom";
-import logo1 from "./assets/logosmall.png";
-import user from "./assets/user.png";
-import xmark from "./assets/xmark.svg";
-import "./style/dash.css";
+import { Link, useNavigate } from "react-router-dom";
+import logo1 from "../assets/logosmall.png";
+import xmark from "../assets/xmark.svg";
+import "../style/dash.css";
 import { useState, useEffect } from "react";
 
 export default function Dash() {
   const [isNavActive, setNavActive] = useState(false);
   const [userData, setUserData] = useState("");
-  const [imageData, setImageData] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [balance, setBalance] = useState(0.0);
   const [profit, setProfit] = useState(0.0);
+  const navigate = useNavigate();
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
@@ -54,7 +53,7 @@ export default function Dash() {
     }
 
     window.localStorage.clear();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -90,38 +89,6 @@ export default function Dash() {
     fetchUserData();
   }, []);
 
-  useEffect(() => {
-    const fetchImageData = async () => {
-      const token = window.localStorage.getItem("token");
-      if (!token) return;
-
-      try {
-        const response = await fetch("http://localhost:3001/imageData", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch images");
-        }
-
-        const data = await response.json();
-        if (data.status === "ok") {
-          setImageData(data.data);
-        } else {
-          console.error("Error fetching images:", data.error);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-
-    fetchImageData();
-  }, []);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -147,12 +114,11 @@ export default function Dash() {
           const fetchedTransactions = data.data;
           setTransactions(fetchedTransactions);
 
-          // Update balance and profit using only the latest transaction
-          if (fetchedTransactions.length > 0) {
-            const transaction = fetchedTransactions[fetchedTransactions.length - 1];
-            let newBalance = userData.balance || 0;
-            let newProfit = userData.profit || 0;
+          // Correct balance and profit calculations
+          let newBalance = balance || 0;
+          let newProfit = profit || 0;
 
+          fetchedTransactions.forEach((transaction) => {
             if (transaction.status.toLowerCase() === "success") {
               if (transaction.type.toLowerCase() === "profit") {
                 newProfit += transaction.amount;
@@ -162,10 +128,10 @@ export default function Dash() {
                 newBalance += transaction.amount;
               }
             }
+          });
 
-            setBalance(newBalance);
-            setProfit(newProfit);
-          }
+          setBalance(newBalance);
+          setProfit(newProfit);
         } else {
           console.error("Error fetching transactions:", data.error);
         }
@@ -175,18 +141,77 @@ export default function Dash() {
     };
 
     fetchTransactions();
-  }, [userData]); // Dependency on userData to ensure proper balance initialization
+  }, []); // Dependency on userData to ensure proper balance initialization
 
   return (
     <>
       <div className="container">
         <div className={`navigation ${isNavActive ? "active" : ""}`}>
-          {/* Navigation code remains the same */}
+        <div className="navbar">
+          <img className="logo1" src={logo1} alt="logo" />
+          <img
+            className="xmark"
+            src={xmark}
+            alt="logo"
+            onClick={closeNavigation}
+          />
+        </div>
+
+        <ul>
+          <li>
+            <Link to={"/user"}>
+              <span className="icon">
+                <ion-icon name="home-outline"></ion-icon>
+              </span>
+              <span className="title">Dashboard</span>
+            </Link>
+          </li>
+          <li>
+            <Link to={"/user/withdrawals"}>
+              <span className="icon">
+                <ion-icon name="wallet-outline"></ion-icon>
+              </span>
+              <span className="title">Withdrawals</span>
+            </Link>
+          </li>
+          <li>
+            <Link to={"/user/transactions"}>
+              <span className="icon">
+                <ion-icon name="stats-chart-outline"></ion-icon>
+              </span>
+              <span className="title">Transactions</span>
+            </Link>
+          </li>
+          <li>
+            <Link to={"/user/settings"}>
+              <span className="icon">
+                <ion-icon name="settings-outline"></ion-icon>
+              </span>
+              <span className="title">Settings</span>
+            </Link>
+          </li>
+          <li>
+            <Link to={"/login"} onClick={logOut}>
+              <span className="icon">
+                <ion-icon name="log-out-outline"></ion-icon>
+              </span>
+              <span className="title">Sign Out</span>
+            </Link>
+          </li>
+        </ul>
         </div>
 
         <div className={`main ${isNavActive ? "active" : ""}`}>
           <div className="topbar">
-            {/* Topbar code remains the same */}
+          <div className="toggle" onClick={toggleNavigation}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+              <path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z" />
+            </svg>
+          </div>
+
+          <div className="user1">
+            <p>Welcome {userData.fname}</p>
+          </div>
           </div>
 
           <div className="user-content">

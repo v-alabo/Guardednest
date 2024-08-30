@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
-import logo1 from "./assets/logosmall.png";
-import cus1 from "./assets/customer01.jpg";
-import xmark from "./assets/xmark.svg";
-import "./style/dash.css";
+import logo1 from "../assets/logosmall.png";
+import xmark from "../assets/xmark.svg";
+import "../style/dash.css";
 import { useState, useEffect } from "react";
 export default function Settings() {
   const [isNavActive, setNavActive] = useState(true);
@@ -10,9 +9,34 @@ export default function Settings() {
   function toggleNavigation() {
     setNavActive(!isNavActive);
   }
-  const logOut = () => {
+  const logOut = async () => {
+    const token = window.localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch("http://localhost:3001/saveData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ balance, profit }),
+      });
+
+      const data = await response.json();
+      if (data.status === "ok") {
+        console.log("Balance and profit saved successfully.");
+      } else {
+        console.error("Error saving balance and profit:", data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
     window.localStorage.clear();
-  };
+    navigate("/login");
+  }
 
   const [userData, setUserData] = useState("");
 
@@ -107,9 +131,6 @@ export default function Settings() {
             </div>
             <div className="user1">
               <p>Welcome {userData.fname}</p>
-              <div className="user">
-                <img src={cus1} alt="profie-photo" />
-              </div>
             </div>
           </div>
           <div className="sector">
@@ -125,18 +146,7 @@ export default function Settings() {
                 <p>Verifications</p>
               </Link>
             </div>
-            <div className="photo">
-              <Link to={"./photo"}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 512 512"
-                  width={"59px"}
-                >
-                  <path d="M149.1 64.8L138.7 96H64C28.7 96 0 124.7 0 160V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H373.3L362.9 64.8C356.4 45.2 338.1 32 317.4 32H194.6c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
-                </svg>
-                <p>Update Photo</p>
-              </Link>
-            </div>
+
             <div className="email">
               <Link>
                 <svg

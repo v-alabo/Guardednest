@@ -287,13 +287,13 @@ export default function AdminTransaction() {
                               <option value="progress">Processing</option>
                               <option value="pending">Pending</option>
                             </select>
-                            <button
+                            <button className="proceed"
                               onClick={() =>
                                 handleStatusChange(transaction._id)
                               }
                               disabled={loading}
                             >
-                              {loading ? "Updating..." : "Update"}
+                              {loading ? "Updating..." : "Update"} 
                             </button>
                           </td>
                         </tr>
@@ -351,7 +351,7 @@ export default function AdminTransaction() {
                 <option value="progress">Processing</option>
                 <option value="pending">Pending</option>
               </select>
-              <button type="submit" disabled={loading}>
+              <button type="submit" disabled={loading} className="proceed">
                 {loading ? "Adding..." : "Add Transaction"}
               </button>
             </form>

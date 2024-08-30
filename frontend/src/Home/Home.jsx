@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import vid from "./assets/video1.mp4";
-import logo from "./assets/logosmall.png";
-import logo2 from "./assets/logo2.png"
-import bar from "./assets/bar.svg";
-import xmark from "./assets/xmark.svg";
+import vid from "../assets/video1.mp4";
+import logo from "../assets/logosmall.png";
+import logo2 from "../assets/logo2.png"
+import bar from "../assets/bar.svg";
+import xmark from "../assets/xmark.svg";
 import { useState } from "react";
-import "./style/home.css";
+import "../style/home.css";
 
 function Home() {
   const [isNavActive, setNavActive] = useState(false);
