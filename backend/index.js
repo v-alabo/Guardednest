@@ -3,8 +3,6 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
-const path = require("path");
 const userModel = require("./models/User");
 const fundModel = require("./models/Fund");
 const transactionModel = require("./models/Transact");
@@ -105,21 +103,20 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/users", async (req, res) => {
-  const { username, email } = req.query; // Use req.query for GET requests
-
+app.get('/user/:username', async (req, res) => {
+  const { username } = req.params;
   try {
-    const query = {};
-    if (username) query.username = username;
-    if (email) query.email = email;
-
-    const users = await userModel.find(query);
-    res.json({ status: "ok", data: users });
+    const user = await userModel.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+    res.json({ status: 'ok', data: user });
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ status: "error", error: "Failed to fetch users" });
+    res.status(500).json({ status: 'error', message: 'Error fetching user: ' + error.message });
   }
 });
+
+
 
 app.post("/saveData", (req, res) => {
   const { balance, profit } = req.body;
@@ -243,7 +240,7 @@ app.post("/transactions", async (req, res) => {
   }
 });
 
-app.get("/transactions", async (req, res) => {
+app.get("/transactions/:username", async (req, res) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
 
   if (!token) {
@@ -284,17 +281,9 @@ app.patch("/transactions-update", async (req, res) => {
   }
 
   try {
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username;
-    const { id, status } = req.body; // Extract id and status from request body
-
-    if (!id || !status) {
-      return res.status(400).json({ status: "error", error: "Missing transaction ID or status" });
-    }
-
     // Update the specific transaction for the user
-    const updatedTransaction = await transactionModel.findOneAndUpdate(
-      { _id: id, username },
+    const updatedTransaction = await transactionModel.find(
+      { username },
       { status },
       { new: true } // Return the updated document
     );
@@ -333,7 +322,6 @@ app.post("/transactions-add", async (req, res) => {
       type,
       amount,
       status,
-      created_at: new Date(),
     });
 
     await newTransaction.save(); // Save the new transaction to the database

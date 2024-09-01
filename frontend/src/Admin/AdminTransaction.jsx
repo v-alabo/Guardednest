@@ -29,37 +29,17 @@ export default function AdminTransaction() {
     window.localStorage.clear();
   };
 
-  const decodeToken = (token) => {
-    try {
-      return JSON.parse(atob(token.split(".")[1]));
-    } catch (error) {
-      console.error("Invalid token", error);
-      return null;
-    }
-  };
+
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const token = window.localStorage.getItem("token");
-        const decodedToken = decodeToken(token);
-        const username = decodedToken ? decodedToken.username : null;
-
-        if (!username) {
-          alert("Invalid or expired token. Please log in again.");
-          return;
-        }
-
-        const response = await fetch(
-          `http://localhost:3001/transactions?username=${username}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`http://localhost:3001/transactions/${username}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         const data = await response.json();
         if (data.status === "ok") {

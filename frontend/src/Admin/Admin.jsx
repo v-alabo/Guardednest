@@ -1,12 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import logo1 from "../assets/logosmall.png";
 import xmark from "../assets/xmark.svg";
-import "../style/admin.css";
+import "../style/dash.css";
 import { useState, useEffect } from "react";
 
 export default function Admin() {
   const [isNavActive, setNavActive] = useState(false);
   const [users, setUsers] = useState([]);
+  const { username } = useParams(); 
   const navigate = useNavigate();
 
   function toggleNavigation() {
@@ -22,27 +24,38 @@ export default function Admin() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const fetchUsers = async () => {
+      if (!username) return; // Ensure that a username is available
+
       try {
-        const response = await fetch("http://localhost:3001/users", {
+        const response = await fetch(`http://localhost:3001/user/${username}`,{
           method: "GET",
           headers: {
-            Authorization: `Bearer ${window.localStorage.getItem("token")}`,
             "Content-Type": "application/json",
           },
         });
-
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+  
         const data = await response.json();
         if (data.status === "ok") {
-          setUsers(data.data);
+          setUsers(data.data); // Assuming data.data contains the user details
         }
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     };
-
+  
     fetchUsers();
+  
+    return () => {
+      isMounted = false; // Cleanup function to set the flag to false on component unmount
+    };
   }, []);
+  
 
   const handleViewTransactions = (username) => {
     navigate(`/admin/transactions/${username}`);
@@ -124,11 +137,11 @@ export default function Admin() {
 
         <div>
           <h2>Admin Dashboard</h2>
-          <div>
-            <h2>Admin Dashboard</h2>
+          <p>open</p>
             <div className="user-cards">
               {users.map((user) => (
-                <div className="user-card" key={user._id}>
+                <div className="user-card" key={user.name}>
+                  
                   <div className="card-header">
                     <h3 className="username">{user.username}</h3>
                     <p className="email">{user.email}</p>
@@ -151,6 +164,5 @@ export default function Admin() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

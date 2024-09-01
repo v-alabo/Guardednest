@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import logo1 from "../assets/logosmall.png";
 import xmark from "../assets/xmark.svg";
 import "../style/dash.css";
-import { useState, useEffect } from "react";
 
 export default function Dash() {
   const [isNavActive, setNavActive] = useState(false);
@@ -10,6 +11,7 @@ export default function Dash() {
   const [transactions, setTransactions] = useState([]);
   const [balance, setBalance] = useState(0.0);
   const [profit, setProfit] = useState(0.0);
+  const { username } = useParams();
   const navigate = useNavigate();
 
   function toggleNavigation() {
@@ -58,18 +60,15 @@ export default function Dash() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = window.localStorage.getItem("token");
-      if (!token) return;
+      if (!username) return; // Ensure that a username is available
 
       try {
-        const response = await fetch("http://localhost:3001/userData", {
-          method: "POST",
+        const response = await fetch(`http://localhost:3001/user/${username}`, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ token }),
         });
         const data = await response.json();
         if (data.data === "token expired") {
@@ -87,22 +86,23 @@ export default function Dash() {
     };
 
     fetchUserData();
-  }, []);
+  }, [username]); // Add 'username' as a dependency
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const token = window.localStorage.getItem("token");
-      if (!token) return;
+      if (!username) return; // Add a guard clause to ensure username exists
 
       try {
-        const response = await fetch("http://localhost:3001/transactions", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
+        const response = await fetch(
+          `http://localhost:3001/transactions/${username}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch transactions");
@@ -113,11 +113,10 @@ export default function Dash() {
           const fetchedTransactions = data.data;
           setTransactions(fetchedTransactions);
 
-          // Initialize balance and profit from userData if not already set
+          // Correct balance and profit calculations
           let newBalance = userData.balance || 0;
           let newProfit = userData.profit || 0;
 
-          // Correct balance and profit calculations
           fetchedTransactions.forEach((transaction) => {
             if (transaction.status.toLowerCase() === "success") {
               if (transaction.type.toLowerCase() === "profit") {
@@ -141,19 +140,21 @@ export default function Dash() {
     };
 
     fetchTransactions();
-  }, [userData]); // Dependency on userData to ensure proper balance initialization
+  }, [username, userData]);
+  
 
   return (
     <>
       <div className="container">
         <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" className="xmark">
-          <path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 
-          25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 
-          45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z" onClick={closeNavigation} 
-          width={"35px"}
-          /></svg>
+          <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
           </div>
 
           <ul>
@@ -219,13 +220,19 @@ export default function Dash() {
                 <div className="card">
                   <div className="tab-1">
                     <div className="cardName">Balance:</div>
-                    <div className="numbers">${balance.toFixed(2)}</div>
+                    <div className="numbers">${balance.toLocaleString(undefined,{ minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     <div className="bar-1">
-                      <button>
                         <Link className="link" to={"./fund"}>
-                          Fund
+                        <button className="fund">
+                        <svg className="plus" xmlns="http://www.w3.org/2000/svg" width={"30px"} viewBox="0 0 448 512" >
+                        <path fill="#999" 
+                        d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 
+                        32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 
+                        17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 
+                        32-32s-14.3-32-32-32l-144 0 0-144z"/>
+                        </svg> Fund Account
+                      </button>  
                         </Link>
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -235,14 +242,17 @@ export default function Dash() {
                     <div className="cardName">Profit:</div>
                     <div className="numbers">${profit.toFixed(2)}</div>
                     <div className="bar-2">
-                      <button>
+                      
                         <Link className="link" to={"./transfer"}>
-                          Transfer
+                          <button className="fund">Transfer
+
+                          </button>
                         </Link>
-                      </button>
+                      
                     </div>
-                  </div>
+                  </div> 
                 </div>
+
               </div>
             </div>
             <div className="details">
@@ -255,7 +265,7 @@ export default function Dash() {
                     <table>
                       <thead>
                         <tr>
-                          <td>Transaction</td>
+                          <td>Type</td>
                           <td>Amount</td>
                           <td>Status</td>
                         </tr>

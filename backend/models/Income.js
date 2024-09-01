@@ -6,6 +6,6 @@ const incomeSchema = new mongoose.Schema({
   profit: { type: Number, required: true }
 });
 
-const incomeModel = mongoose.model("paypal", incomeSchema);
+const incomeModel = mongoose.model("income", incomeSchema);
 
 module.exports = incomeModel;

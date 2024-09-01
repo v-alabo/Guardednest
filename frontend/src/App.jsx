@@ -20,7 +20,6 @@ import Confirmation from './User/Confirmation'
 import Settings from './User/Settings'
 import Transactions from './User/Transactions'
 import Admin from './Admin/Admin'
-import UserCard from './Admin/UserCard'
 import AdminTransaction from './Admin/AdminTransaction'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
@@ -41,7 +40,7 @@ function App() {
         <Route path='/policy' element={<Policy />}></Route>
         <Route path='/terms' element={<Terms />}></Route>
         <Route path='/faq' element={<Faq />}></Route>
-        <Route path='/user' element={<Dash />}></Route>
+        <Route path='/user/:username' element={<Dash />}></Route>
         <Route path='/user/fund' element={<Fund />}></Route>
         <Route path='/user/fund/payment' element={<Payment />}></Route>
         <Route path='/user/fund/payment/confirmation' element={<Confirmation />}></Route>
@@ -54,7 +53,6 @@ function App() {
         <Route path='/user/settings' element={<Settings />}></Route>
         <Route path='/user/transactions' element={<Transactions />}></Route>
         <Route path='/admin' element={<Admin />}></Route>
-        <Route path='/admin/usercard/:username' element={<UserCard />}></Route>
         <Route path='/admin/transactions/:username' element={<AdminTransaction />}></Route>
 
       </Routes>
