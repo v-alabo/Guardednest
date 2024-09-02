@@ -30,15 +30,12 @@ export default function Dash() {
   };
 
   const logOut = async () => {
-    const token = window.localStorage.getItem("token");
-    if (!token) return;
 
     try {
       const response = await fetch("http://localhost:3001/saveData", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
         body: JSON.stringify({ balance, profit }),
@@ -61,62 +58,53 @@ export default function Dash() {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!username) return; // Ensure that a username is available
-
       try {
-        const response = await fetch(`http://localhost:3001/user/${username}`, {
+        const response = await fetch(`http://localhost:3001/users`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
         });
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
         const data = await response.json();
-        if (data.data === "token expired") {
-          alert("Token expired, login again");
-          window.localStorage.clear();
-          window.location.href = "/login";
-        } else {
+        if (data.status === "ok") {
           setUserData(data.data);
-          setBalance(data.data.balance || 0); // Initialize balance
-          setProfit(data.data.profit || 0); // Initialize profit
+        } else {
+          console.error("Error fetching user data:", data.error);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error:", error);
       }
     };
-
     fetchUserData();
-  }, [username]); // Add 'username' as a dependency
+  }, [username]);
+  
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      if (!username) return; // Add a guard clause to ensure username exists
-
+      if (!username) return;
       try {
-        const response = await fetch(
-          `http://localhost:3001/transactions/${username}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          }
-        );
-
+        const response = await fetch(`http://localhost:3001/transactions/${username}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch transactions");
         }
-
         const data = await response.json();
         if (data.status === "ok") {
           const fetchedTransactions = data.data;
           setTransactions(fetchedTransactions);
-
-          // Correct balance and profit calculations
-          let newBalance = userData.balance || 0;
-          let newProfit = userData.profit || 0;
-
+  
+          let newBalance = balance || 0;
+          let newProfit = profit || 0;
+  
           fetchedTransactions.forEach((transaction) => {
             if (transaction.status.toLowerCase() === "success") {
               if (transaction.type.toLowerCase() === "profit") {
@@ -128,7 +116,7 @@ export default function Dash() {
               }
             }
           });
-
+  
           setBalance(newBalance);
           setProfit(newProfit);
         } else {
@@ -138,9 +126,9 @@ export default function Dash() {
         console.error("Error:", error);
       }
     };
-
     fetchTransactions();
-  }, [username, userData]);
+  }, [username, balance, profit]);
+  
   
 
   return (

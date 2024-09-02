@@ -37,7 +37,7 @@ export default function Login() {
           window.localStorage.setItem("token", data.data);
           window.localStorage.setItem("loggedIn", true);
 
-          navigate("/user");
+          navigate("/user/:username");
         }
       });
   }

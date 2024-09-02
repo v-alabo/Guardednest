@@ -20,6 +20,7 @@ import Confirmation from './User/Confirmation'
 import Settings from './User/Settings'
 import Transactions from './User/Transactions'
 import Admin from './Admin/Admin'
+import UserDetails from './Admin/UserDetails';
 import AdminTransaction from './Admin/AdminTransaction'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
@@ -54,6 +55,7 @@ function App() {
         <Route path='/user/transactions' element={<Transactions />}></Route>
         <Route path='/admin' element={<Admin />}></Route>
         <Route path='/admin/transactions/:username' element={<AdminTransaction />}></Route>
+        <Route path='/admin/userdetails/:username' element={<UserDetails />}></Route>
 
       </Routes>
       </BrowserRouter>

@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const session = require("express-session");
+const cookieParser = require("cookie-parser")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("./models/User");
@@ -15,7 +17,9 @@ const app = express();
 const port = 3001;
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 app.use(bodyParser.json());
+app.use(session)
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong" });
@@ -94,8 +98,7 @@ app.post("/login", async (req, res) => {
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (passwordMatch) {
-      const token = jwt.sign({ username: user.username }, JWT_SECRET);
-      return res.status(200).json({ status: "ok", data: token });
+      return res.status(200).json({ status: "ok"});
     }
     res.status(401).json({ status: "error", error: "Invalid Password" });
   } catch (error) {
@@ -103,7 +106,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get('/user/:username', async (req, res) => {
+app.get('/users', async (req, res) => {
   const { username } = req.params;
   try {
     const user = await userModel.findOne({ username });
@@ -206,53 +209,27 @@ app.post("/fundData", async (req, res) => {
 });
 
 app.post("/transactions", async (req, res) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
-
-  if (!token) {
-    console.error("No token provided");
-    return res
-      .status(401)
-      .json({ success: false, message: "No token provided" });
-  }
-
+  const { username, type, status, amount } = req.body;
   try {
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username;
-
-
-    const { type, status, amount } = req.body;
-   
     const newTransaction = new transactionModel({
       username,
       type,
       amount,
       status,
     });
-
     await newTransaction.save();
-
     res.json({ status: "ok", data: newTransaction });
   } catch (error) {
     console.error("Error creating transaction:", error);
-    res
-      .status(500)
-      .json({ status: "error", error: "Failed to create transaction" });
+    res.status(500).json({ status: "error", error: "Failed to create transaction" });
   }
 });
 
+
 app.get("/transactions/:username", async (req, res) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
-
-  if (!token) {
-    console.error("No token provided");
-    return res
-      .status(401)
-      .json({ success: false, message: "No token provided" });
-  }
-
+  
+  const { username } = req.params;
   try {
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username;
 
     // Fetch transactions for the user
     const transactions = await transactionModel.find({ username });
@@ -272,26 +249,18 @@ app.get("/transactions/:username", async (req, res) => {
   }
 });
 
-app.patch("/transactions-update", async (req, res) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Authorization header
-
-  if (!token) {
-    console.error("No token provided");
-    return res.status(401).json({ success: false, message: "No token provided" });
-  }
-
+app.patch("/transactions-update/:id", async (req, res) => {
+  const { username } = req.params;
+  const { status } = req.body;
   try {
-    // Update the specific transaction for the user
-    const updatedTransaction = await transactionModel.find(
-      { username },
+    const updatedTransaction = await transactionModel.findByIdAndUpdate(
+      username,
       { status },
-      { new: true } // Return the updated document
+      { new: true }
     );
-
     if (!updatedTransaction) {
-      return res.status(404).json({ status: "error", error: "Transaction not found or does not belong to the user" });
+      return res.status(404).json({ status: "error", error: "Transaction not found" });
     }
-
     res.json({ status: "ok", data: updatedTransaction });
   } catch (error) {
     console.error("Error updating transaction status:", error);
@@ -299,16 +268,11 @@ app.patch("/transactions-update", async (req, res) => {
   }
 });
 
+
 // Add this route to your backend
 app.post("/transactions-add", async (req, res) => {
-  const token = req.headers["authorization"]?.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: "No token provided" });
-  }
 
   try {
-    const decodedToken = jwt.verify(token, JWT_SECRET);
     const { username, type, amount, status } = req.body; // Extract transaction details from the request body
 
     // Check if the required fields are present
