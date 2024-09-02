@@ -16,10 +16,21 @@ const { connectDB } = require("./config/db");
 const app = express();
 const port = 3001;
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(session)
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,
+    maxAge: 1000 * 60 * 60 * 24
+  }
+}))
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong" });
@@ -98,7 +109,8 @@ app.post("/login", async (req, res) => {
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (passwordMatch) {
-      return res.status(200).json({ status: "ok"});
+      req.session.username = user.username;
+      return res.status(200).json({ status: "ok", username: req.session.username});
     }
     res.status(401).json({ status: "error", error: "Invalid Password" });
   } catch (error) {
@@ -113,6 +125,9 @@ app.get('/users', async (req, res) => {
     if (!user) {
       return res.status(404).json({ status: 'error', message: 'User not found' });
     }
+
+    req.session.username = user.username;
+
     res.json({ status: 'ok', data: user });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Error fetching user: ' + error.message });
@@ -123,10 +138,6 @@ app.get('/users', async (req, res) => {
 
 app.post("/saveData", (req, res) => {
   const { balance, profit } = req.body;
-  const token = req.headers.authorization.split(" ")[1];
-
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const username = decodedToken.username;
   // Save balance and profit to the database
   const saveData =  incomeModel.updateOne({ username}, { balance, profit }, { new: true, upsert: true })
     .then(() => res.json({ status: "ok", data: saveData }))

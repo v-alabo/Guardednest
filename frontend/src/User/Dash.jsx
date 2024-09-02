@@ -55,32 +55,28 @@ export default function Dash() {
     navigate("/login");
   };
 
+
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!username) return; // Ensure that a username is available
       try {
-        const response = await fetch(`http://localhost:3001/users`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
+        const response = await fetch('http://localhost:3001/users', {
+          method: 'GET',
+          credentials: 'include', // Include cookies
         });
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
+
         const data = await response.json();
-        if (data.status === "ok") {
+        if (data.status === 'ok') {
           setUserData(data.data);
         } else {
-          console.error("Error fetching user data:", data.error);
+          console.error("Error fetching userdata:", data.error);
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching userdata:", data.error);
       }
     };
+
     fetchUserData();
-  }, [username]);
+  }, []);
   
 
   useEffect(() => {
