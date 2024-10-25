@@ -46,8 +46,9 @@ connectDB();
 
 
 const createToken = (id, username) => {
-  return jwt.sign({ id, username }, process.env.JWT_SECRET);
+  return jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
+ 
 
 
 // const verifyToken = (req, res, next) => {

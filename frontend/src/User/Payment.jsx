@@ -192,7 +192,7 @@ useEffect(() => {
       console.error("Error:", error);
     }
 
-    navigate("/user/fund/payment/confirmation", {
+    navigate(`/user/${username}/fund/payment/confirmation`, {
       state: { amount: fundData.amount, crypto: selectedCrypto, invoice },
     });
   };

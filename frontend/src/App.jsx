@@ -46,7 +46,7 @@ function App() {
         <Route path='/user/:username' element={<Dash />}></Route>
         <Route path='/user/:username/fund' element={<Fund />}></Route>
         <Route path="/user/:username/fund/payment" element={<Payment />}></Route>
-        <Route path='/user/fund/payment/confirmation' element={<Confirmation />}></Route>
+        <Route path='/user/:username/fund/payment/confirmation' element={<Confirmation />}></Route>
         <Route path='/user/withdrawals' element={<Withdrawals />}></Route>
         <Route path='/user/withdrawals/select' element={<Select />}></Route>
         <Route path='/user/withdrawals/select/bank' element={<Bank />}></Route>
