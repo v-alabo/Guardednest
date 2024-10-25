@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+
 
 const withdrawalSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -13,4 +14,4 @@ const withdrawalSchema = new mongoose.Schema({
 
 const withdrawModel = mongoose.model("withdraw", withdrawalSchema);
 
-module.exports = withdrawModel;
+export default withdrawModel;

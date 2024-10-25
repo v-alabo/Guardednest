@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams  } from "react-router-dom";
 import logo1 from "../assets/logosmall.png";
 import xmark from "../assets/xmark.svg";
 import "../style/dash.css";
@@ -11,10 +11,37 @@ export default function Payment() {
   const [selectedCrypto, setSelectedCrypto] = useState("");
   const [cryptoRates, setCryptoRates] = useState({});
   const navigate = useNavigate();
+  const { username } = useParams();
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
   }
+
+// Fetch user data by username
+useEffect(() => {
+  const fetchUserData = async () => {
+    if (!username) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/users/${username}`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies
+      });
+
+      const data = await response.json();
+      if (data.status === 'ok') {
+        setUserData(data.data); // Set the user data with the fetched user info
+      } else {
+        console.error("Error fetching user data:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  fetchUserData();
+}, [username]);
+
 
   const logOut = async () => {
     const token = window.localStorage.getItem("token");
@@ -27,6 +54,7 @@ export default function Payment() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({ balance, profit }),
       });
@@ -61,6 +89,7 @@ export default function Payment() {
   useEffect(() => {
     // Retrieve token from local storage
     const token = window.localStorage.getItem("token");
+  
     if (!token) {
       navigate("/login"); // Redirect to login page if token is not available
       return;
@@ -69,11 +98,11 @@ export default function Payment() {
     // Fetch user data
     fetch("http://localhost:3001/userData", {
       method: "POST",
-      crossDomain: true,
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,  // Send token as Bearer token
         Accept: "application/json",
-        "Access-Control-Allow-Origin": "*",
+      
       },
       body: JSON.stringify({
         token: token,
@@ -81,6 +110,7 @@ export default function Payment() {
     })
       .then((res) => res.json())
       .then((data) => {
+      
         if (data.status === "ok") {
           setUserData(data.data);
         } else {
@@ -94,12 +124,15 @@ export default function Payment() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ token }), // Send token in the request body
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.status === "ok") {
+        
+        if (data.status === 'ok') {
+          
           setFundData(data.data);
         } else {
           console.error("Error fetching fund data:", data.error);
@@ -160,7 +193,7 @@ export default function Payment() {
     }
 
     navigate("/user/fund/payment/confirmation", {
-      state: { amount: fundData.amount, crypto: selectedCrypto },
+      state: { amount: fundData.amount, crypto: selectedCrypto, invoice },
     });
   };
 
@@ -234,7 +267,7 @@ export default function Payment() {
               </svg>
             </div>
             <div className="user1">
-              <p>Welcome {userData?.fname}</p>
+              <p>Welcome  {userData ? userData.fname : "User"}</p>
             </div>
           </div>
           <div className="tab">

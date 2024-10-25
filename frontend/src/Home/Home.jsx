@@ -1,50 +1,16 @@
 import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import vid from "../assets/video1.mp4";
-import logo from "../assets/logosmall.png";
-import logo2 from "../assets/logo2.png"
-import bar from "../assets/bar.svg";
-import xmark from "../assets/xmark.svg";
-import { useState } from "react";
 import "../style/home.css";
+import Footer from "./Footer";
+import Header from "./Header";
+import Payment from "../User/Payment";
+
 
 function Home() {
-  const [isNavActive, setNavActive] = useState(false);
-
-  function toggleNavigation() {
-    setNavActive(!isNavActive);
-  }
-
   return (
     <>
-      <nav>
-        <div className="top">
-          <a className="logo" href="home.html">
-            <img src={logo} alt="logo" />
-          </a>
-          <div className="bar" onClick={toggleNavigation}>
-            <img src={isNavActive ? xmark : bar} alt="menu" />
-          </div>
-        </div>
-        <ul className={`menu ${isNavActive ? "active" : ""}`}>
-          <li>
-            <Link to="/home">Home</Link>
-          </li>
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-          <li>
-            <Link to="/services">Services</Link>
-          </li>
-          <li>
-            <Link to="/contact">Contact</Link>
-          </li>
-          <Link to={"/login"} className="book">
-            Sign-in
-          </Link>
-        </ul>
-      </nav>
-
+    <Header/>
+   
       <div className="container">
         <div className="sect1">
           <div className="text">
@@ -55,12 +21,12 @@ function Home() {
               <br />
               <span>GuardedNest Financials</span>
             </h2>
-            <Link className="reg" to="/register">
+            <Link className="reg" to="/signup">
               Get Started
             </Link>
             <p className="follow">Follow us</p>
             <div className="socials">
-              <FontAwesomeIcon />
+              
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="icon"
@@ -101,73 +67,7 @@ function Home() {
         </div>
       </div>
 
-      <footer>
-        <div className="foot">
-          <div className="col0">
-            <img src={logo2} alt="logo" />
-            <h3>
-              Welcome to our investment site! We offer the best,
-              <br />
-              most affordable products and services around.
-              <br />
-              Shop now and start finding great deals!
-            </h3>
-          </div>
-
-          <div className="col1">
-            <ul>
-              <p>Quick link</p>
-              <li>
-                <Link to={"/home"}>Home</Link>
-              </li>
-              <li>
-                <Link to={"/about"}>About</Link>
-              </li>
-              <li>
-                <Link to={"/services"}>Services</Link>
-              </li>
-              <li>
-                <Link to={"/contact"}>Contact Us</Link>
-              </li>
-            </ul>
-          </div>
-          <div className="col2">
-            <ul>
-              <p>Account</p>
-              <li>
-                <Link to={"/login"}>Login</Link>
-              </li>
-              <li>
-                <Link to={"/register"}>Sign up</Link>
-              </li>
-              <li>
-                <Link to={"/human-rights"}>Human Rights Policy</Link>
-              </li>
-              <li>
-                <Link to={"/support"}>Support Center</Link>
-              </li>
-            </ul>
-          </div>
-          <div className="col3">
-            <ul>
-              <p>Support</p>
-              <li>
-                <Link to={"/policy"}>Privacy Policy</Link>
-              </li>
-              <li>
-                <Link to={"/terms"}>Terms&Conditions</Link>
-              </li>
-              <li>
-                <Link to={"/faq"}>FAQs</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="copyright">
-          <h3>© 2023 All Rights Reserved By GNF</h3>
-        </div>
-      </footer>
+      <Footer/>
     </>
   );
 }

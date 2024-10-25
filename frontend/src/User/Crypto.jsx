@@ -214,7 +214,7 @@ export default function Crypto() {
               </svg>
             </div>
             <div className="user1">
-              <p>Welcome {userData.fname}</p>
+              <p>Welcome </p>
             </div>
           </div>
           <div className="tab">
