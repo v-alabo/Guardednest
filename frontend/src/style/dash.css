@@ -35,7 +35,7 @@ body {
   overflow: hidden;
 }
 .navigation.active {
-  width: 430px;
+  width: 250px;
 }
 
 .navigation ul {
@@ -224,6 +224,7 @@ body {
 
 /* ======================= Cards ====================== */
 .cardBox {
+  
   width: 100%;
   padding: 20px 10pc;
 }
@@ -516,18 +517,20 @@ text-align: center;
 .wallet{
   text-align: center;
   position: relative;
+  bc1qk47jxm8rrec2um50ext8s4mqdjr7sp3lnrlzhh
+  
 }
 
 .wallet span{
   position: absolute;
   top: 21px;
-  left: 6.5pc;
+  right: 0;
   cursor: pointer;
 }
 
 .wallet input{
   text-align: center;
-  width: 70%;
+  width: 90%;
   padding: 20px;
   font-size: 18px;
 }
@@ -723,9 +726,18 @@ button{
     left: -300px;
   }
   .navigation.active {
-    width: 300px;
+    width: 180px;
     left: 0;
   }
+
+.logo1{
+  display: none;
+}
+
+  .navigation ul li a .title {
+    font-size: 15px;
+  }
+
   .main {
     width: 100%;
     left: 0;

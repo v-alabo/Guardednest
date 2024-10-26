@@ -1,82 +1,61 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/logosmall.png";
-import logo2 from "../assets/logo2.png";
-import bar from "../assets/bar.svg";
-import xmark from "../assets/xmark.svg";
 import goog from "../assets/google.svg";
 import "../style/home.css";
+import eye from "../assets/eye.svg"; 
+import eyeOff from "../assets/eye-off.svg"
+import Header from "./Header";
+import Footer from "./Footer";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
-  function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(username, password);
-    fetch("http://localhost:3001/login", {
-      method: "POST",
-      crossDomain: true,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "userRegister");
-        if (data.status == "ok") {
-          alert("login successful");
-          window.localStorage.setItem("token", data.data);
-          window.localStorage.setItem("loggedIn", true);
-
-          navigate("/user/:username");
-        }
+    try {
+      const response = await fetch("http://localhost:3001/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
       });
-  }
 
-  const [isNavActive, setNavActive] = useState(false);
+      const data = await response.json();
 
-  function toggleNavigation() {
-    setNavActive(!isNavActive);
-  }
+      if (response.ok) {
+        if (data.success) {
+          toast.success("Login successful!");
+          window.localStorage.setItem("token", data.token);
+          window.localStorage.setItem("loggedIn", true);
+          navigate(`/user/${username}`);
+        } else {
+          // Handle unsuccessful login response
+          toast.error(data.message || "Login failed. Please check your credentials.");
+        }
+      } else {
+        // Handle server errors
+        toast.error("Server error: " + (data.message || "Please try again later."));
+      }
+    } catch (error) {
+      toast.error("An error occurred: " + error.message);
+    }
+  };
 
   return (
     <>
-      <nav>
-        <div className="top">
-          <a className="logo" href="home.html">
-            <img src={logo} alt="logo" />
-          </a>
-          <div className="bar" onClick={toggleNavigation}>
-            <img src={isNavActive ? xmark : bar} alt="menu" />
-          </div>
-        </div>
-        <ul className={`menu ${isNavActive ? "active" : ""}`}>
-          <li>
-            <Link to="/home">Home</Link>
-          </li>
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-          <li>
-            <Link to="/services">Services</Link>
-          </li>
-          <li>
-            <Link to="/contact">Contact</Link>
-          </li>
-          <Link to={"/login"} className="book">
-            Sign-in
-          </Link>
-        </ul>
-      </nav>
+      <Header />
       <div className="content">
         <div className="section">
           <div className="login">
@@ -94,7 +73,7 @@ export default function Login() {
                 <span>
                   <img src={goog} alt="google icon" />
                 </span>
-                Continue with google{" "}
+                Continue with Google
               </Link>
               <br />
             </div>
@@ -111,14 +90,24 @@ export default function Login() {
                 onChange={(e) => setUserName(e.target.value)}
               />
 
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="Password"
-                required
-                onChange={(e) => setPassword(e.target.value)}
-              />
+
+
+<div className="password-container">
+                <label htmlFor="password">Password</label>
+                <div className="password-input">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    required
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <div className="eye-button" onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}>
+                  <img src={showPassword ? eye : eyeOff} alt={showPassword ? "Hide password" : "Show password"} />
+                  </div>
+                </div>
+              </div>
+
 
               <a className="forgot" href="forgot-pass.html">
                 Forgot Password?
@@ -130,7 +119,6 @@ export default function Login() {
 
             <div className="signup">
               <p>
-                {" "}
                 Don&#39;t have an account? <Link to="/signup">Sign up</Link>
               </p>
             </div>
@@ -138,73 +126,8 @@ export default function Login() {
         </div>
       </div>
 
-      <footer>
-        <div className="foot">
-          <div className="col0">
-            <img src={logo2} alt="logo" />
-            <h3>
-              Welcome to our investment site! We offer the best,
-              <br />
-              most affordable products and services around.
-              <br />
-              Shop now and start finding great deals!
-            </h3>
-          </div>
-
-          <div className="col1">
-            <ul>
-              <p>Quick link</p>
-              <li>
-                <Link to={"/home"}>Home</Link>
-              </li>
-              <li>
-                <Link to={"/about"}>About</Link>
-              </li>
-              <li>
-                <Link to={"/services"}>Services</Link>
-              </li>
-              <li>
-                <Link to={"/contact"}>Contact Us</Link>
-              </li>
-            </ul>
-          </div>
-          <div className="col2">
-            <ul>
-              <p>Account</p>
-              <li>
-                <Link to={"/login"}>Login</Link>
-              </li>
-              <li>
-                <Link to={"/register"}>Sign up</Link>
-              </li>
-              <li>
-                <Link to={"/human-rights"}>Human Rights Policy</Link>
-              </li>
-              <li>
-                <Link to={"/support"}>Support Center</Link>
-              </li>
-            </ul>
-          </div>
-          <div className="col3">
-            <ul>
-              <p>Support</p>
-              <li>
-                <Link to={"/policy"}>Privacy Policy</Link>
-              </li>
-              <li>
-                <Link to={"/terms"}>Terms&Conditions</Link>
-              </li>
-              <li>
-                <Link to={"/faq"}>FAQs</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="copyright">
-          <h3>© 2023 All Rights Reserved By GNF</h3>
-        </div>
-      </footer>
+      <Footer />
+      <ToastContainer />
     </>
   );
 }

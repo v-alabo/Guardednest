@@ -1,9 +1,12 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import logo1 from "../assets/logosmall.png";
 import cus1 from "../assets/customer01.jpg";
 import xmark from "../assets/xmark.svg";
 import "../style/dash.css";
 import { useState, useEffect } from "react";
+
+
+
 
 const addresses = {
   bitcoin: "bc1qk47jxm8rrec2um50ext8s4mqdjr7sp3lnrlzhh",
@@ -20,8 +23,38 @@ const cryptoShortForms = {
 function Confirmation() {
   const [isNavActive, setNavActive] = useState(false);
   const location = useLocation();
-  const { amount, crypto } = location.state || {};
+  const { amount, crypto, invoice } = location.state || {};
   const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
+  const navigate = useNavigate();
+const [userData, setUserData] = useState("");
+const { username } = useParams();
+
+
+
+
+useEffect(() => {
+  const fetchUserData = async () => {
+    if (!username) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/users/${username}`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies
+      });
+
+      const data = await response.json();
+      if (data.status === 'ok') {
+        setUserData(data.data); // Set the user data with the fetched user info
+      } else {
+        console.error("Error fetching user data:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  fetchUserData();
+}, [username]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -86,7 +119,7 @@ function Confirmation() {
     navigate("/login");
   }
 
-  const [userData, setUserData] = useState("");
+  const token = window.localStorage.getItem("token");
 
   useEffect(() => {
     fetch("http://localhost:3001/userData", {
@@ -94,16 +127,18 @@ function Confirmation() {
       crossDomain: true,
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
         Accept: "application/json",
+        
         "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
-        token: window.localStorage.getItem("token"),
+        token: token,
       }),
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userData");
+       
         setUserData(data.data);
 
         if (data.data === "token expired") {
@@ -181,7 +216,7 @@ function Confirmation() {
             </div>
 
             <div className="user1">
-              <p>Welcome {userData.fname}</p>
+              <p>Welcome  {userData ? userData.fname : "User"}</p>
               <div className="user">
                 <img src={cus1} alt="profile-photo" />
               </div>
@@ -189,9 +224,10 @@ function Confirmation() {
           </div>
           <div className="tab">
             <div className="bank">
-              <div className="text5">
-                <h2>Send Crypto</h2>
-                <p>SEND {amount} {cryptoShortForms[crypto]} TO THE WALLET ADDRESS BELOW</p>
+            <div className="text5">
+               <h2>Send Crypto</h2>
+               <p>{invoice ? `SEND ${invoice} TO THE WALLET ADDRESS BELOW` : `SEND ${amount}
+                ${cryptoShortForms[crypto]} TO THE WALLET ADDRESS BELOW`}</p>
               </div>
 
               <div className="wallet">

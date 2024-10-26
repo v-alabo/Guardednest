@@ -1,10 +1,12 @@
-const mongoose = require('mongoose')
+import mongoose from "mongoose";
 
 const fundSchema = new mongoose.Schema({
     username: String,
     plan: String,
     amount: String,
-})
+});
 
 const fundModel = mongoose.model("funds", fundSchema);
-module.exports = fundModel
+
+// Use ES6 export
+export default fundModel;

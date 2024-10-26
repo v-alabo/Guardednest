@@ -3,6 +3,32 @@ body {
   padding: 0;
   margin: 0;
 }
+
+.password-container {
+  position: relative;
+}
+
+.password-input {
+  display: flex;
+  align-items: center;
+}
+
+.eye-button {
+  background: transparent;
+  
+  border: none;
+  cursor: pointer;
+  margin-left: -30px; /* Adjust as needed */
+  outline: none;
+  z-index: 100;
+}
+
+.eye-button img {
+  width: 20px; /* Adjust size as needed */
+  height: auto;
+  fill: black;
+}
+
 .loader {
   position: fixed;
   top: 0px;
@@ -44,8 +70,9 @@ nav {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+  
 }
-.logo img {
+.mainlogo img {
   width: 90px;
   margin-top: 10px;
   margin-left: 10px;
@@ -188,17 +215,21 @@ video.responsive-video {
 }
 .teaminfo {
   position: relative;
+  max-width: 312px;
+ 
 }
 .teaminfo img {
-  width: 312px;
+  width: 100%;
   border-radius: 24px;
 }
 .team-details {
   position: absolute;
-  top: 17.5pc;
-  left: 3pc;
+
+  bottom: 8px;
+  padding: 0 50px;
+  left: 25px; 
   background: #f1ededc7;
-  padding: 0 70px;
+  
   border-radius: 24px;
 }
 .team-details h6 {
@@ -344,22 +375,29 @@ form textarea {
 }
 .google-sect {
   position: relative;
+  display: flex;
   justify-content: center;
-  text-align: center;
+  
+  align-items: center;
+  margin-left: auto;
+  margin-right:auto ;
+  width: 250px; 
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 .google-sect a {
-  border: 1px solid #ccc;
-  padding: 14px 150px;
-  background: white;
-  border-radius: 4px;
+  
+  padding: 10px;
+  text-align: center;
+  
   text-decoration: none;
   color: black;
   font-size: 20px;
 }
 .google-sect a span {
   position: absolute;
-  top: 0;
-  left: 9pc;
+  left: 5px;
 }
 .divider {
   position: relative;
@@ -521,10 +559,10 @@ form textarea {
   font-size: 30px;
 }
 .plan {
-  background: #cb8d39;
+ 
   text-decoration: none;
   color: black;
-  padding: 8px 50px;
+
   border-radius: 12px;
 }
 
@@ -1031,13 +1069,14 @@ footer {
     margin-right: 10px;
     font-size: 17px;
   }
-  button {
+ button {
     font-size: 20px;
     background: #cb8d39;
     color: white;
     padding: 10px 25px;
     width: 100%;
   }
+   
   .signup {
     text-align: center;
     font-size: 18px;
@@ -1625,10 +1664,6 @@ footer {
     width: 100%;
   }
 
-  .foot {
-    display: block;
-    margin-bottom: 20px;
-  }
   .col0{
     font-size: 20px;
     text-align: center;
@@ -1648,4 +1683,30 @@ footer {
   .foot p {
     margin-top: 20px;
   }
+
+   
+.foot {
+  display: flex;
+  flex-direction: column;
+  
+  justify-content: space-between;
+  color: black;
+} 
+}
+
+
+@media only screen and (min-width: 602px) and (max-width: 960px) {
+ 
+.foot {
+  display: flex;
+  flex-direction: column;
+  
+  justify-content: space-between;
+  color: black;
+}
+
+.col0{
+  font-size: 20px;
+  text-align: center;
+}
 }

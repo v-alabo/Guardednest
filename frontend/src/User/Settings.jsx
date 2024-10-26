@@ -82,7 +82,7 @@ export default function Settings() {
 
           <ul>
             <li>
-              <Link to={"/user"} activeClassName="active">
+              <Link to={"/user"} className="active">
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
@@ -132,7 +132,7 @@ export default function Settings() {
               </svg>
             </div>
             <div className="user1">
-              <p>Welcome {userData.fname}</p>
+              <p>Welcome </p>
             </div>
           </div>
           <div className="sector">

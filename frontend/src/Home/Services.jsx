@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "../assets/logosmall.png";
+
 import logo2 from "../assets/logo2.png"
 import serv1 from "../assets/services/1.png";
 import serv2 from "../assets/services/2.png";
@@ -7,47 +7,15 @@ import serv3 from "../assets/services/3.png";
 import serv4 from "../assets/services/4.png";
 import serv5 from "../assets/services/5.png";
 import serv6 from "../assets/services/6.png";
-import bar from "../assets/bar.svg";
-import xmark from "../assets/xmark.svg";
-import { useState } from "react";
+
 import "../style/home.css";
+import Header from "./Header";
 
 function Services() {
-  const [isNavActive, setNavActive] = useState(false);
-
-  function toggleNavigation() {
-    setNavActive(!isNavActive);
-  }
-
+ 
   return (
     <>
-      <nav>
-        <div className="top">
-          <a className="logo" href="home.html">
-            <img src={logo} alt="logo" />
-          </a>
-          <div className="bar" onClick={toggleNavigation}>
-            <img src={isNavActive ? xmark : bar} alt="menu" />
-          </div>
-        </div>
-        <ul className={`menu ${isNavActive ? "active" : ""}`}>
-          <li>
-            <Link to="/home">Home</Link>
-          </li>
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-          <li>
-            <Link to="/services">Services</Link>
-          </li>
-          <li>
-            <Link to="/contact">Contact</Link>
-          </li>
-          <Link to={"/login"} className="book">
-            Sign-in
-          </Link>
-        </ul>
-      </nav>
+     <Header/>
 
       <div className="container">
         <div className="text4">
@@ -158,9 +126,11 @@ function Services() {
               <br />
               Full IT Support
             </p>
+            <button >
             <Link className="plan" to="/login">
               Purchase Plan
-            </Link>
+              </Link>
+              </button>
           </div>
 
           <div className="price-info">
@@ -175,9 +145,11 @@ function Services() {
               <br />
               Full IT Support
             </p>
+            <button >
             <Link className="plan" to="/login">
               Purchase Plan
-            </Link>
+              </Link>
+              </button>
           </div>
 
           <div className="price-info">
@@ -192,9 +164,13 @@ function Services() {
               <br />
               Full IT Support
             </p>
+          
+            <button >
             <Link className="plan" to="/login">
               Purchase Plan
-            </Link>
+              </Link>
+              </button>
+       
           </div>
 
           <div className="price-info">
@@ -209,9 +185,11 @@ function Services() {
               <br />
               Full IT Support
             </p>
-            <Link className="plan" to="/login">
+            <button >
+            <Link to="/login">
               Purchase Plan
-            </Link>
+              </Link>
+              </button>
           </div>
         </div>
       </div>
