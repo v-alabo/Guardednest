@@ -119,40 +119,11 @@ useEffect(() => {
     navigate("/login");
   }
 
-  const token = window.localStorage.getItem("token");
-
-  useEffect(() => {
-    fetch("http://localhost:3001/userData", {
-      method: "POST",
-      crossDomain: true,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-        Accept: "application/json",
-        
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        token: token,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-       
-        setUserData(data.data);
-
-        if (data.data === "token expired") {
-          alert("Token expired login again");
-          window.localStorage.clear();
-          window.location.href = "./sign-in";
-        }
-      });
-  }, []);
 
   return (
     <>
       <div className="container">
-        <div className={`navigation ${isNavActive ? "active" : ""}`}>
+      <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
             <img className="logo1" src={logo1} alt="logo" />
             <img
@@ -165,15 +136,15 @@ useEffect(() => {
 
           <ul>
             <li>
-              <Link to={"/user"}>
+              <Link to={`/user/${username}`}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
-                <span className="title ">Dashboard</span>
+                <span className="title">Dashboard</span>
               </Link>
             </li>
             <li>
-              <Link to={"/user/withdrawals"}>
+              <Link to={`/user/${username}/withdrawals`}>
                 <span className="icon">
                   <ion-icon name="wallet-outline"></ion-icon>
                 </span>
@@ -181,7 +152,7 @@ useEffect(() => {
               </Link>
             </li>
             <li>
-              <Link to={"/user/transactions"}>
+              <Link to={`/user/${username}/transactions`}>
                 <span className="icon">
                   <ion-icon name="stats-chart-outline"></ion-icon>
                 </span>
@@ -189,7 +160,7 @@ useEffect(() => {
               </Link>
             </li>
             <li>
-              <Link to={"/user/settings"}>
+              <Link to={`/user/${username}/settings`}>
                 <span className="icon">
                   <ion-icon name="settings-outline"></ion-icon>
                 </span>
@@ -226,8 +197,7 @@ useEffect(() => {
             <div className="bank">
             <div className="text5">
                <h2>Send Crypto</h2>
-               <p>{invoice ? `SEND ${invoice} TO THE WALLET ADDRESS BELOW` : `SEND ${amount}
-                ${cryptoShortForms[crypto]} TO THE WALLET ADDRESS BELOW`}</p>
+               <p>SEND {invoice} TO THE WALLET ADDRESS BELOW</p>
               </div>
 
               <div className="wallet">

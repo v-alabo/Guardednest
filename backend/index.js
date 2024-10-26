@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import session from "express-session";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import validator from "validator";
@@ -380,27 +379,29 @@ app.post("/fundData", verifyToken, async (req, res) => {
     return res.status(400).json({ error: "Invalid token" });
   }
 });
-// app.post("/transactions", async (req, res) => {
-//   const { username, type, status, amount } = req.body;
-//   try {
-//     const newTransaction = new transactionModel({
-//       username,
-//       type,
-//       amount,
-//       status,
-//     });
-//     await newTransaction.save();
-//     res.json({ status: "ok", data: newTransaction });
-//   } catch (error) {
-//     console.error("Error creating transaction:", error);
-//     res.status(500).json({ status: "error", error: "Failed to create transaction" });
-//   }
-// });
+
+ app.post("/transactions", async (req, res) => {
+  const { username, type, status, amount } = req.body;
+   try {
+    const newTransaction = new transactionModel({
+      username,
+       type,
+      amount,
+       status,
+    });
+    await newTransaction.save();
+    res.json({ status: "ok", data: newTransaction });
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    res.status(500).json({ status: "error", error: "Failed to create transaction" });
+   }
+ });
 
 
 
 // Backend - Express.js route for fetching transactions by username
 
+/*
 app.post("/transactions", async (req, res) => {
   const { type, status, amount } = req.body;
   try {
@@ -417,6 +418,7 @@ app.post("/transactions", async (req, res) => {
     res.status(500).json({ status: "error", error: "Failed to create transaction" });
   }
 });
+*/
 
 app.get("/transactions/:username", async (req, res) => {
   const { username } = req.params;

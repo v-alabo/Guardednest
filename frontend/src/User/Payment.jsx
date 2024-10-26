@@ -79,9 +79,9 @@ useEffect(() => {
       : null;
 
   const cryptoShortForms = {
-    bitcoin: "btc",
-    ethereum: "eth",
-    tether: "usdt",
+    bitcoin: "BTC",
+    ethereum: "ETH",
+    tether: "USDT",
   };
 
   const invoice = divisionResult !== null ? `${divisionResult.toFixed(4)} ${cryptoShortForms[selectedCrypto]}` : null;
@@ -94,30 +94,6 @@ useEffect(() => {
       navigate("/login"); // Redirect to login page if token is not available
       return;
     }
-
-    // Fetch user data
-    fetch("http://localhost:3001/userData", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,  // Send token as Bearer token
-        Accept: "application/json",
-      
-      },
-      body: JSON.stringify({
-        token: token,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-      
-        if (data.status === "ok") {
-          setUserData(data.data);
-        } else {
-          console.error("Error fetching user data:", data.error);
-          navigate("/login"); // Redirect if there's an error
-        }
-      });
 
     // Fetch fund data
     fetch("http://localhost:3001/fundData", {
@@ -170,6 +146,7 @@ useEffect(() => {
           "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({
+          username,
           type: "Deposit",
           amount: fundData.amount,
           status: "pending",
@@ -204,7 +181,7 @@ useEffect(() => {
   return (
     <>
       <div className="container">
-        <div className={`navigation ${isNavActive ? "active" : ""}`}>
+      <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
             <img className="logo1" src={logo1} alt="logo" />
             <img
@@ -217,7 +194,7 @@ useEffect(() => {
 
           <ul>
             <li>
-              <Link to={"/user"}>
+              <Link to={`/user/${username}`}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
@@ -225,7 +202,7 @@ useEffect(() => {
               </Link>
             </li>
             <li>
-              <Link to={"/user/withdrawals"}>
+              <Link to={`/user/${username}/withdrawals`}>
                 <span className="icon">
                   <ion-icon name="wallet-outline"></ion-icon>
                 </span>
@@ -233,7 +210,7 @@ useEffect(() => {
               </Link>
             </li>
             <li>
-              <Link to={"/user/transactions"}>
+              <Link to={`/user/${username}/transactions`}>
                 <span className="icon">
                   <ion-icon name="stats-chart-outline"></ion-icon>
                 </span>
@@ -241,7 +218,7 @@ useEffect(() => {
               </Link>
             </li>
             <li>
-              <Link to={"/user/settings"}>
+              <Link to={`/user/${username}/settings`}>
                 <span className="icon">
                   <ion-icon name="settings-outline"></ion-icon>
                 </span>

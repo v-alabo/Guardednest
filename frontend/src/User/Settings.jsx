@@ -74,23 +74,28 @@ export default function Settings() {
   return (
     <>
       <div className="container">
-        <div className={`navigation ${isNavActive ? "active" : ""}`}>
+      <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
-          <img className="logo1" src={logo1} alt="logo" />
-          <img className="xmark" src={xmark} alt="logo" onClick={closeNavigation} />
+            <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
           </div>
 
           <ul>
             <li>
-              <Link to={"/user"} className="active">
+              <Link to={`/user/${username}`}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
-                <span className="title ">Dashboard</span>
+                <span className="title">Dashboard</span>
               </Link>
             </li>
             <li>
-              <Link to={"/user/withdrawals"}>
+              <Link to={`/user/${username}/withdrawals`}>
                 <span className="icon">
                   <ion-icon name="wallet-outline"></ion-icon>
                 </span>
@@ -98,7 +103,7 @@ export default function Settings() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/transactions"}>
+              <Link to={`/user/${username}/transactions`}>
                 <span className="icon">
                   <ion-icon name="stats-chart-outline"></ion-icon>
                 </span>
@@ -106,7 +111,7 @@ export default function Settings() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/settings"}>
+              <Link to={`/user/${username}/settings`}>
                 <span className="icon">
                   <ion-icon name="settings-outline"></ion-icon>
                 </span>

@@ -47,14 +47,14 @@ function App() {
         <Route path='/user/:username/fund' element={<Fund />}></Route>
         <Route path="/user/:username/fund/payment" element={<Payment />}></Route>
         <Route path='/user/:username/fund/payment/confirmation' element={<Confirmation />}></Route>
-        <Route path='/user/withdrawals' element={<Withdrawals />}></Route>
-        <Route path='/user/withdrawals/select' element={<Select />}></Route>
-        <Route path='/user/withdrawals/select/bank' element={<Bank />}></Route>
-        <Route path='/user/withdrawals/select/crypto' element={<Crypto />}></Route>
-        <Route path='/user/withdrawals/select/paypal' element={<Paypal />}></Route>
-        <Route path='/user/withdrawals/select/cashapp' element={<Cashapp />}></Route>
-        <Route path='/user/settings' element={<Settings />}></Route>
-        <Route path='/user/transactions' element={<Transactions />}></Route>
+        <Route path='/user/:username/withdrawals' element={<Withdrawals />}></Route>
+        <Route path='/user/:username/withdrawals/select' element={<Select />}></Route>
+        <Route path='/user/:username/withdrawals/select/bank' element={<Bank />}></Route>
+        <Route path='/user/:username/withdrawals/select/crypto' element={<Crypto />}></Route>
+        <Route path='/user/:username/withdrawals/select/paypal' element={<Paypal />}></Route>
+        <Route path='/user/:username/withdrawals/select/cashapp' element={<Cashapp />}></Route>
+        <Route path='/user//:usernamesettings' element={<Settings />}></Route>
+        <Route path='/user//:usernametransactions' element={<Transactions />}></Route>
         <Route path='/admin' element={<Admin />}></Route>
         <Route path='/admin/transactions/:username' element={<AdminTransaction />}></Route>
         <Route path='/admin/userdetails/:username' element={<UserDetails />}></Route>

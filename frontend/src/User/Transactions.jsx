@@ -149,7 +149,7 @@ export default function Transactions() {
   return (
     <>
       <div className="container">
-        <div className={`navigation ${isNavActive ? "active" : ""}`}>
+      <div className={`navigation ${isNavActive ? "active" : ""}`}>
           <div className="navbar">
             <img className="logo1" src={logo1} alt="logo" />
             <img
@@ -162,15 +162,15 @@ export default function Transactions() {
 
           <ul>
             <li>
-              <Link to={"/user"}>
+              <Link to={`/user/${username}`}>
                 <span className="icon">
                   <ion-icon name="home-outline"></ion-icon>
                 </span>
-                <span className="title ">Dashboard</span>
+                <span className="title">Dashboard</span>
               </Link>
             </li>
             <li>
-              <Link to={"/user/withdrawals"}>
+              <Link to={`/user/${username}/withdrawals`}>
                 <span className="icon">
                   <ion-icon name="wallet-outline"></ion-icon>
                 </span>
@@ -178,7 +178,7 @@ export default function Transactions() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/transactions"}>
+              <Link to={`/user/${username}/transactions`}>
                 <span className="icon">
                   <ion-icon name="stats-chart-outline"></ion-icon>
                 </span>
@@ -186,7 +186,7 @@ export default function Transactions() {
               </Link>
             </li>
             <li>
-              <Link to={"/user/settings"}>
+              <Link to={`/user/${username}/settings`}>
                 <span className="icon">
                   <ion-icon name="settings-outline"></ion-icon>
                 </span>

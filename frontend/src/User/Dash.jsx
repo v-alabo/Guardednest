@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import xmark from "../assets/xmark.svg";
+import logo1 from "../assets/logosmall.png";
 import "../style/dash.css";
-import UserHeader from "../Home/UserHeader";
-import Payment from "./Payment";
 
 export default function Dash() {
   const [isNavActive, setNavActive] = useState(false);
@@ -16,9 +16,11 @@ export default function Dash() {
 
   const navigateToFund = () => {
     navigate(`/user/${username}/fund`);
+  };
+
+  function toggleNavigation() {
+    setNavActive(!isNavActive);
   }
-
-
 
   function closeNavigation() {
     setNavActive(false);
@@ -61,13 +63,16 @@ export default function Dash() {
       if (!username) return;
 
       try {
-        const response = await fetch(`http://localhost:3001/users/${username}`, {
-          method: 'GET',
-          credentials: 'include', // Include cookies
-        });
+        const response = await fetch(
+          `http://localhost:3001/users/${username}`,
+          {
+            method: "GET",
+            credentials: "include", // Include cookies
+          }
+        );
 
         const data = await response.json();
-        if (data.status === 'ok') {
+        if (data.status === "ok") {
           setUserData(data.data); // Set the user data with the fetched user info
         } else {
           console.error("Error fetching user data:", data.error);
@@ -78,19 +83,22 @@ export default function Dash() {
     };
 
     fetchUserData();
-  }, [username]);  // Added username in dependency array to trigger useEffect when username changes.
+  }, [username]); // Added username in dependency array to trigger useEffect when username changes.
 
   useEffect(() => {
     const fetchTransactions = async () => {
       if (!username) return;
       try {
-        const response = await fetch(`http://localhost:3001/transactions/${username}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
+        const response = await fetch(
+          `http://localhost:3001/transactions/${username}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch transactions");
         }
@@ -124,35 +132,110 @@ export default function Dash() {
       }
     };
     fetchTransactions();
-  }, [username, balance, profit]);
+  }, [username]);
 
   return (
     <>
       <div className="container">
-       
+        <div className={`navigation ${isNavActive ? "active" : ""}`}>
+          <div className="navbar">
+            <img className="logo1" src={logo1} alt="logo" />
+            <img
+              className="xmark"
+              src={xmark}
+              alt="logo"
+              onClick={closeNavigation}
+            />
+          </div>
 
+          <ul>
+            <li>
+              <Link to={`/user/${username}`}>
+                <span className="icon">
+                  <ion-icon name="home-outline"></ion-icon>
+                </span>
+                <span className="title">Dashboard</span>
+              </Link>
+            </li>
+            <li>
+              <Link to={`/user/${username}/withdrawals`}>
+                <span className="icon">
+                  <ion-icon name="wallet-outline"></ion-icon>
+                </span>
+                <span className="title">Withdrawals</span>
+              </Link>
+            </li>
+            <li>
+              <Link to={`/user/${username}/transactions`}>
+                <span className="icon">
+                  <ion-icon name="stats-chart-outline"></ion-icon>
+                </span>
+                <span className="title">Transactions</span>
+              </Link>
+            </li>
+            <li>
+              <Link to={`/user/${username}/settings`}>
+                <span className="icon">
+                  <ion-icon name="settings-outline"></ion-icon>
+                </span>
+                <span className="title">Settings</span>
+              </Link>
+            </li>
+            <li>
+              <Link to={"/login"} onClick={logOut}>
+                <span className="icon">
+                  <ion-icon name="log-out-outline"></ion-icon>
+                </span>
+                <span className="title">Sign Out</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+        
         <div className={`main ${isNavActive ? "active" : ""}`}>
-          <UserHeader/>
+          <div className="topbar">
+            <div className="toggle" onClick={toggleNavigation}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                <path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32-14.3 32-32z" />
+              </svg>
+            </div>
 
+            <div className="user1">
+              {/* Check if userData is available before displaying */}
+              <p>Welcome {userData ? userData.fname : "User"}</p>
+            </div>
+          </div>
           <div className="user-content">
             <div className="cardBox">
               <div className="head">
                 <div className="card">
                   <div className="tab-1">
                     <div className="cardName">Balance:</div>
-                    <div className="numbers">${balance.toLocaleString(undefined,{ minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div className="numbers">
+                      $
+                      {balance.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
                     <div className="bar-1">
-                        
-                        <button className="fund" onClick={navigateToFund}>
-                        <svg className="plus" xmlns="http://www.w3.org/2000/svg" width={"30px"} viewBox="0 0 448 512" >
-                        <path fill="#999" 
-                        d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 
+                      <button className="fund" onClick={navigateToFund}>
+                        <svg
+                          className="plus"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width={"30px"}
+                          viewBox="0 0 448 512"
+                        >
+                          <path
+                            fill="#999"
+                            d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 
                         32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 
                         17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 
-                        32-32s-14.3-32-32-32l-144 0 0-144z"/>
-                        </svg> Fund Account
-                      </button>  
-                        
+                        32-32s-14.3-32-32-32l-144 0 0-144z"
+                          />
+                        </svg>{" "}
+                        Fund Account
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -162,17 +245,12 @@ export default function Dash() {
                     <div className="cardName">Profit:</div>
                     <div className="numbers">${profit.toFixed(2)}</div>
                     <div className="bar-2">
-                      
-                        <Link className="link" to={"./transfer"}>
-                          <button className="fund">Transfer
-
-                          </button>
-                        </Link>
-                      
+                      <Link className="link" to={"./transfer"}>
+                        <button className="fund">Transfer</button>
+                      </Link>
                     </div>
-                  </div> 
+                  </div>
                 </div>
-
               </div>
             </div>
             <div className="details">
@@ -214,8 +292,6 @@ export default function Dash() {
             </div>
           </div>
         </div>
-
-   
       </div>
     </>
   );
