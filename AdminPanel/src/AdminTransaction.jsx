@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
-import logo1 from "../assets/logosmall.png";
-import xmark from "../assets/xmark.svg";
-import "../style/dash.css";
+import { Link, useParams } from "react-router-dom"; // Import useParams
+import logo1 from "./assets/logosmall.png";
+import xmark from "./assets/xmark.svg";
+import "./admin.css";
 import { useState, useEffect } from "react";
 
 export default function AdminTransaction() {
@@ -17,6 +17,8 @@ export default function AdminTransaction() {
   });
   const [loading, setLoading] = useState(false); // New loading state
 
+  const { username } = useParams(); // Get username from URL params
+
   function toggleNavigation() {
     setNavActive(!isNavActive);
   }
@@ -28,8 +30,6 @@ export default function AdminTransaction() {
   const logOut = () => {
     window.localStorage.clear();
   };
-
-
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -52,45 +52,46 @@ export default function AdminTransaction() {
 
     const fetchUsers = async () => {
       try {
-        const token = window.localStorage.getItem("token");
-        const response = await fetch(`http://localhost:3001/users`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch("http://localhost:3001/users"); // Adjust the URL as needed
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
         const data = await response.json();
         if (data.status === "ok") {
-          setUsers(data.data);
+          setUsers(data.data); // Assuming data.data contains the array of users
+        } else {
+          throw new Error(data.message);
         }
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      } catch (err) {
+        console.error("Failed to fetch users:", err.message);
       }
     };
 
     fetchTransactions();
     fetchUsers(); // Fetch users when component loads
-  }, []);
+  }, [username]); // Add username as a dependency
 
   const handleStatusChange = async (transactionId) => {
     const newStatus = statusUpdates[transactionId];
-
+  
+    // Check if the new status is valid
+    if (!newStatus) {
+      alert("Please select a valid status");
+      return;
+    }
+  
     try {
       setLoading(true); // Start loading
-      const response = await fetch(
-        `http://localhost:3001/transactions-update`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${window.localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ id: transactionId, status: newStatus }),
-        }
-      );
-
+      const response = await fetch(`http://localhost:3001/transactions-update/${transactionId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: newStatus }), // Only send status, not ID
+      });
+  
       const data = await response.json();
       if (data.status === "ok") {
         alert("Status updated successfully");
@@ -102,14 +103,16 @@ export default function AdminTransaction() {
           [transactionId]: "", // Clear the status update for the updated transaction
         }));
       } else {
-        console.error("Error updating status:", data.error);
+        alert("Error updating status: " + (data.error || "Unknown error"));
       }
     } catch (error) {
+      alert("Error: " + error.message);
       console.error("Error:", error);
     } finally {
       setLoading(false); // Stop loading
     }
   };
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -223,7 +226,6 @@ export default function AdminTransaction() {
         </div>
 
         <div>
-          <h2>Admin Dashboard</h2>
           <div className="details">
             <div className="cardHeader">
               <h2>Transactions</h2>

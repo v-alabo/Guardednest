@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+/*import mongoose from "mongoose";
 
 const incomeSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -9,4 +9,4 @@ const incomeSchema = new mongoose.Schema({
 const incomeModel = mongoose.model("income", incomeSchema);
 
 // Use ES6 export
-export default incomeModel;
+export default incomeModel;*/

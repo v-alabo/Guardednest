@@ -4,6 +4,7 @@ import Services from './Home/Services';
 import Login from './Home/Login';
 import Signup from './Home/Signup'
 import Contact from './Home/Contact';
+import Human from './Home/Human';
 import Dash from './User/Dash';
 import Withdrawals from './User/Withdrawals';
 import Select from './User/Select';
@@ -19,11 +20,8 @@ import Payment from './User/Payment'
 import Confirmation from './User/Confirmation'
 import Settings from './User/Settings'
 import Transactions from './User/Transactions'
-import Admin from './Admin/Admin'
-import UserDetails from './Admin/UserDetails';
-import AdminTransaction from './Admin/AdminTransaction'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
-import Human from './Home/Human';
+
 
 
 
@@ -53,11 +51,8 @@ function App() {
         <Route path='/user/:username/withdrawals/select/crypto' element={<Crypto />}></Route>
         <Route path='/user/:username/withdrawals/select/paypal' element={<Paypal />}></Route>
         <Route path='/user/:username/withdrawals/select/cashapp' element={<Cashapp />}></Route>
-        <Route path='/user//:usernamesettings' element={<Settings />}></Route>
-        <Route path='/user//:usernametransactions' element={<Transactions />}></Route>
-        <Route path='/admin' element={<Admin />}></Route>
-        <Route path='/admin/transactions/:username' element={<AdminTransaction />}></Route>
-        <Route path='/admin/userdetails/:username' element={<UserDetails />}></Route>
+        <Route path='/user/:username/settings' element={<Settings />}></Route>
+        <Route path='/user/:username/transactions' element={<Transactions />}></Route>
 
       </Routes>
       </BrowserRouter>

@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
     phone: Number,
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
+    balance: { type: Number, default: 0 },
+    profit: { type: Number, default: 0 },
 });
 
 const userModel = mongoose.models.users || mongoose.model("users", userSchema);

@@ -34,12 +34,19 @@ export default function Dash() {
   };
 
   const logOut = async () => {
+    const token = window.localStorage.getItem("token");
+  
+    if (!token) {
+      alert("No token found. Please log in again.");
+      return;
+    }
     try {
       const response = await fetch("http://localhost:3001/saveData", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`, // Include token in request headers
         },
         body: JSON.stringify({ balance, profit }),
       });

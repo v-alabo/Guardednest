@@ -1,15 +1,13 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
-import logo1 from "../assets/logosmall.png";
-import xmark from "../assets/xmark.svg";
-import "../style/dash.css";
+import { Link, useParams } from "react-router-dom";
+import logo1 from "./assets/logosmall.png";
+import xmark from "./assets/xmark.svg";
+import "./admin.css";
 import { useState, useEffect } from "react";
 
-export default function Admin() {
+export default function UserDetails() {
   const [isNavActive, setNavActive] = useState(false);
-  const [users, setUsers] = useState([]);
-  const { username } = useParams(); 
-  const navigate = useNavigate();
+  const [selectedUser, setSelectedUser] = useState({});
+  const { username } = useParams(); // Get username from URL params
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
@@ -23,47 +21,37 @@ export default function Admin() {
     window.localStorage.clear();
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchUsers = async () => {
-      if (!username) return; // Ensure that a username is available
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`http://localhost:3001/user/${username}`,{
+        const response = await fetch(`http://localhost:3001/users/${username}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
-  
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-  
+
         const data = await response.json();
         if (data.status === "ok") {
-          setUsers(data.data); // Assuming data.data contains the user details
+          setSelectedUser(data.data);
         }
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching user details:", error);
+      }finally {
+        setLoading(false);
       }
-    };
-  
-    fetchUsers();
-  
-    return () => {
-      isMounted = false; // Cleanup function to set the flag to false on component unmount
-    };
-  }, []);
-  
 
-  const handleViewTransactions = (username) => {
-    navigate(`/admin/transactions/${username}`);
-  };
+    };
 
-  const handleUsercard = (username) => {
-    navigate(`/admin/usercard/${username}`);
-  };
+    fetchUserDetails();
+  }, [username]);
+
+  if (loading) {
+    return <p>Loading...</p>; // Or a spinner
+  }
 
   return (
     <div className="container">
@@ -73,7 +61,7 @@ export default function Admin() {
           <img
             className="xmark"
             src={xmark}
-            alt="logo"
+            alt="close navigation"
             onClick={closeNavigation}
           />
         </div>
@@ -135,34 +123,21 @@ export default function Admin() {
           </div>
         </div>
 
-        <div>
-          <h2>Admin Dashboard</h2>
-          <p>open</p>
-            <div className="user-cards">
-              {users.map((user) => (
-                <div className="user-card" key={user.name}>
-                  
-                  <div className="card-header">
-                    <h3 className="username">{user.username}</h3>
-                    <p className="email">{user.email}</p>
-                  </div>
-                  <button
-                    className="button"
-                    onClick={() => handleViewTransactions(user.username)}
-                  >
-                    View Transactions
-                  </button>
-                  <button
-                    className="button"
-                    onClick={() => handleUsercard(user.username)}
-                  >
-                    View Usercard
-                  </button>
-                </div>
-              ))}
-            </div>
+        <div className="uzer">
+          <h2>User Details</h2>
+          <div className="userDetails">
+            <h3 className="username">{selectedUser.username}</h3>
+            <p>Email: {selectedUser.email}</p>
+            <p>
+              Name: {selectedUser.fname} {selectedUser.lname}
+            </p>
+            <p>Phone: {selectedUser.phone}</p>
+            <p>Country: {selectedUser.country}</p>
+            <p>Balnce: ${selectedUser.balance}</p>
+            <p>Profit: ${selectedUser.profit}</p>
           </div>
         </div>
       </div>
+    </div>
   );
 }

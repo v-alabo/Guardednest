@@ -9,7 +9,6 @@ import userModel from "./models/User.js";
 import fundModel from "./models/Fund.js";
 import transactionModel from "./models/Transact.js";
 import withdrawModel from "./models/Withdraw.js";
-import incomeModel from "./models/Income.js";
 import { connectDB } from "./config/db.js";
 import 'dotenv/config.js';
 
@@ -19,7 +18,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
 }));
 app.use(cookieParser());
@@ -105,28 +104,32 @@ app.post("/signup", async (req, res) => {
   } = req.body;
 
   try {
+    // Check if email or username already exists
     const existingEmail = await userModel.findOne({ email });
     const existingUser = await userModel.findOne({ username });
 
     if (existingEmail) {
-      return res.status(400).json({ error: "Email already in use" });
+      return res.status(400).json({ success: false, message: "Email already in use" });
     }
     if (existingUser) {
-      return res.status(409).json({ error: "Username not available" });
+      return res.status(409).json({ success: false, message: "Username not available" });
     }
-    
+
+    // Validate email format
     if (!validator.isEmail(email)) {
-        return res.json({ success: false, message: "Please enter a valid email"})
+      return res.status(400).json({ success: false, message: "Please enter a valid email" });
     }
 
-    if(password.length<8) {
-      return res.json({ success: false, message: "Please enter a strong password"})
+    // Validate password length
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, message: "Please enter a strong password (min. 8 characters)" });
     }
 
-
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create a new user
     const newUser = await userModel.create({
       username,
       fname,
@@ -139,23 +142,15 @@ app.post("/signup", async (req, res) => {
       password: hashedPassword,
     });
 
+    // Create a token for the new user
     const token = createToken(newUser._id, newUser.username);
-    res.json({ success: true, token });
-  
-    // res.status(201).json({
-    //   success: true,
-    //   message: "User created successfully",
-    //   user: {
-    //     id: newUser._id,
-    //     username: newUser.username,
-    //     email: newUser.email,
-    //   },
-    // });
+    res.status(201).json({ success: true, token });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Signup error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
+
 
 // Login endpoint
 app.post("/login", async (req, res) => {
@@ -182,20 +177,14 @@ app.post("/login", async (req, res) => {
 });
 
 app.get('/users', async (req, res) => {
-  const { username } = req.params;
   try {
-    const user = await userModel.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ status: 'error', message: 'User not found' });
-    }
-
-    req.session.username = user.username;
-
-    res.json({ status: 'ok', data: user });
+    const users = await userModel.find({}); // Fetch all users
+    res.json({ status: 'ok', data: users });
   } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error fetching user: ' + error.message });
+    res.status(500).json({ status: 'error', message: 'Error fetching users: ' + error.message });
   }
 });
+
 
 app.get('/users/:username', async (req, res) => {
   const { username } = req.params;  // Get username from route parameters
@@ -213,14 +202,11 @@ app.get('/users/:username', async (req, res) => {
   }
 });
 
-
-
-
-app.post("/saveData", async (req, res) => {
+app.post("/saveData", verifyToken, async (req, res) => {
   const { balance, profit } = req.body;
   // Save balance and profit to the database
   try {
-    const updatedData = await incomeModel.updateOne(
+    const updatedData = await userModel.updateOne(
       { username: req.username }, // Use username from verified token
       { balance, profit },
       { new: true, upsert: true }
@@ -438,30 +424,32 @@ app.get("/transactions/:username", async (req, res) => {
 });
 
 
-// app.patch("/transactions-update/:id", async (req, res) => {
-//   const { username } = req.params;
-//   const { status } = req.body;
-//   try {
-//     const updatedTransaction = await transactionModel.findByIdAndUpdate(
-//       username,
-//       { status },
-//       { new: true }
-//     );
-//     if (!updatedTransaction) {
-//       return res.status(404).json({ status: "error", error: "Transaction not found" });
-//     }
-//     res.json({ status: "ok", data: updatedTransaction });
-//   } catch (error) {
-//     console.error("Error updating transaction status:", error);
-//     res.status(500).json({ status: "error", error: "Failed to update status" });
-//   }
-// });
+app.patch("/transactions-update/:id", async (req, res) => {
+  const { id } = req.params; // Get the transaction ID from the URL parameters
+  const { status } = req.body;
 
+  try {
+    const updatedTransaction = await transactionModel.findByIdAndUpdate(
+      id, // Update the transaction using the ID from the URL
+      { status },
+      { new: true } // Return the updated document
+    );
 
+    if (!updatedTransaction) {
+      return res.status(404).json({ status: "error", error: "Transaction not found" });
+    }
+
+    res.json({ status: "ok", data: updatedTransaction });
+  } catch (error) {
+    console.error("Error updating transaction status:", error);
+    res.status(500).json({ status: "error", error: "Failed to update status" });
+  }
+});
 // Add this route to your backend
 
 
 // Update transaction status
+/*
 app.patch("/transactions-update/:id", verifyToken, async (req, res) => {
   const { id } = req.params; // Use id from route parameters
   const { status } = req.body;
@@ -480,7 +468,7 @@ app.patch("/transactions-update/:id", verifyToken, async (req, res) => {
     res.status(500).json({ status: "error", error: "Failed to update status" });
  }
  });
-
+*/
 app.post("/transactions-add", async (req, res) => {
 
   try {

@@ -389,24 +389,21 @@ text-align: center;
 }
 .status.pending {
   padding: 4px 8px;
-  background: #e9b10a;
-  color: var(--white);
+  color: #222;
   border-radius: 4px;
   font-size: 25px;
   font-weight: 500;
 }
 .status.failed {
   padding: 4px 8px;
-  background: #f00;
-  color: var(--white);
+  color: #222;
   border-radius: 4px;
   font-size: 25px;
   font-weight: 500;
 }
 .status.progress {
   padding: 4px 8px;
-  background: #1795ce;
-  color: var(--white);
+  color: #222;
   border-radius: 4px;
   font-size: 25px;
   font-weight: 500;
@@ -649,76 +646,6 @@ text-align: center;
   border: 1px solid #cb8d39;
 }
 
-
-/*Admin das*/
-.user-card{
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 8px;
-  max-width: 300px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.card-header{
-  margin-bottom: 16px;
-}
-
-.username{
-  margin: 0 0 8px 0;
-  font-size: 1.5rem;
-  color: #333;
-}
-
-.email {
-  margin: 0;
-  font-size: 1rem;
-  color: #777;
-}
-
-button{
-  padding: 11px 16px;
-  font-size: 1rem;
-  color: #fff;
-  background-color: #007BFF;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.user-cards {
-  color: black;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.newTransact{
-  text-align: center;
-  padding: 20px 6%;
-}
-
-.newTransact form{
-  padding: 40px;
-}
-
-.newSelect{
-  padding:8px 30px;
-  border-radius: 4px;
-  font-size: 20px;
-  margin-right: 5px;
-}
-
-.proceed{
-  padding: 11px 16px;
-  margin-left: 20px;
-  font-size: 1rem;
-  color: #fff;
-  background-color: #007BFF;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
 
 @media (max-width: 991px) {
   .navigation {

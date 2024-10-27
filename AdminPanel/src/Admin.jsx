@@ -1,13 +1,15 @@
-import { Link } from "react-router-dom";
-import logo1 from "../assets/logosmall.png";
-import xmark from "../assets/xmark.svg";
-import "../style/dash.css";
+import { Link, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import logo1 from "./assets/logosmall.png";
+import xmark from "./assets/xmark.svg";
+import "./admin.css";
 import { useState, useEffect } from "react";
 
-export default function UserDetails() {
+export default function Admin() {
   const [isNavActive, setNavActive] = useState(false);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const { username } = useParams(); 
+  const navigate = useNavigate();
 
   function toggleNavigation() {
     setNavActive(!isNavActive);
@@ -21,31 +23,45 @@ export default function UserDetails() {
     window.localStorage.clear();
   };
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
-        const response = await fetch("http://localhost:3001/:username", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-    
+        const response = await fetch("http://localhost:3001/users");
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
         const data = await response.json();
         if (data.status === "ok") {
           setUsers(data.data);
+        } else {
+          throw new Error(data.message);
         }
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    
-
+  
     fetchUsers();
   }, []);
-
-  const handleUserClick = () => {
   
+  if (loading) {
+    return <p>Loading...</p>; // Or a spinner
+  }
+  
+
+  const handleViewTransactions = (user) => {
+    localStorage.setItem("selectedUser", JSON.stringify(user)); // Save the full user object
+    navigate(`/admin/transactions/${user.username}`); // Navigate using username
+  };
+  
+  const handleUsercard = (user) => {
+    localStorage.setItem("selectedUser", JSON.stringify(user)); // Save the full user object
+    navigate(`/admin/userdetails/${user.username}`); // Navigate using username
   };
 
   return (
@@ -67,7 +83,7 @@ export default function UserDetails() {
               <span className="icon">
                 <ion-icon name="home-outline"></ion-icon>
               </span>
-              <span className="title ">Dashboard</span>
+              <span className="title">Dashboard</span>
             </Link>
           </li>
           <li>
@@ -118,25 +134,30 @@ export default function UserDetails() {
           </div>
         </div>
 
-        <div>
+        <div className="panel">
           <h2>Admin Dashboard</h2>
-          <div className="userList">
+          <div className="user-cards">
             {users.map((user) => (
-              <div
-                className="user-card"
-                key={user._id}
-                onClick={() => handleUserClick(user)}
-              >
+              <div className="user-card" key={user.username}>
                 <div className="card-header">
                   <h3 className="username">{user.username}</h3>
-                  <p  className="email">{user.email}</p>
-                  <p>
-                    Name: {user.fname} {user.lname}
-                  </p>
-                  <p>Email: {user.email}</p>
-                  <p>Phone: {user.phone}</p>
-                  <p>Country: {user.country}</p>
+                  <p className="email">{user.email}</p>
                 </div>
+                <div className="btn-sect">
+                  <button
+                  className="button"
+                  onClick={() => handleViewTransactions(user)}
+                >
+                  View Transactions
+                </button>
+                <button
+                  className="button"
+                  onClick={() => handleUsercard(user)}
+                >
+                  View Usercard
+                </button>
+                </div>
+                
               </div>
             ))}
           </div>

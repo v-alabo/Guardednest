@@ -125,33 +125,31 @@ export default function Bank() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:3001/userData", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        token: window.localStorage.getItem("token"),
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "userData");
+    const fetchUserData = async () => {
+      if (!username) return;
 
+      try {
+        const response = await fetch(
+          `http://localhost:3001/users/${username}`,
+          {
+            method: "GET",
+            credentials: "include", // Include cookies
+          }
+        );
+
+        const data = await response.json();
         if (data.status === "ok") {
-          setUserData(data.data);
-        } else if (data.data === "token expired") {
-          alert("Token expired. Please log in again.");
-          window.localStorage.clear();
-          navigate("/login");
+          setUserData(data.data); // Set the user data with the fetched user info
+        } else {
+          console.error("Error fetching user data:", data.error);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching user data:", error);
-        alert("Error fetching user data. Please try again.");
-      });
-  }, []);
+      }
+    };
+
+    fetchUserData();
+  }, [username])
 
   return (
     <>
