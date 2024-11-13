@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import logo1 from "./assets/logosmall.png";
 import xmark from "./assets/xmark.svg";
+import Spinner from './Spinner';
 import "./admin.css";
 import { useState, useEffect } from "react";
 
@@ -50,7 +51,7 @@ export default function Admin() {
   }, []);
   
   if (loading) {
-    return <p>Loading...</p>; // Or a spinner
+    {loading && <Spinner />}
   }
   
 
@@ -65,7 +66,9 @@ export default function Admin() {
   };
 
   return (
+   
     <div className="container">
+       {loading && <Spinner />}
       <div className={`navigation ${isNavActive ? "active" : ""}`}>
         <div className="navbar">
           <img className="logo1" src={logo1} alt="logo" />
